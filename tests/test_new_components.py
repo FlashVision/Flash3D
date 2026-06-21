@@ -149,7 +149,8 @@ class TestPointNetPP:
 
         model = PointNetPP(in_channel=3, use_msg=False)
         xyz = torch.randn(2, 1024, 3)
-        global_feat, _, intermediates = model(xyz)
+        features = torch.randn(2, 1024, 3)
+        global_feat, _, intermediates = model(xyz, features)
         assert global_feat.shape == (2, 1024)
         assert len(intermediates) == 4
 
@@ -158,7 +159,8 @@ class TestPointNetPP:
 
         model = PointNetPPClassifier(num_classes=10, in_channel=3, use_msg=False)
         xyz = torch.randn(2, 1024, 3)
-        logits = model(xyz)
+        features = torch.randn(2, 1024, 3)
+        logits = model(xyz, features)
         assert logits.shape == (2, 10)
 
     def test_farthest_point_sample(self):

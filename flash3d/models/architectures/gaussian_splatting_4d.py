@@ -94,7 +94,7 @@ class DeformationNetwork(nn.Module):
 
         self.backbone = nn.ModuleList([layer for layer in layers if isinstance(layer, nn.Linear)])
         self.activations = nn.ModuleList([layer for layer in layers if isinstance(layer, nn.ReLU)])
-        self.skip_layer_idx = num_layers // 2
+        self.skip_layer_idx = num_layers // 2 + 1
 
         self.position_head = nn.Linear(hidden_dim, 3)
         self.rotation_head = nn.Linear(hidden_dim, 4)
