@@ -152,7 +152,8 @@ def build_parser() -> argparse.ArgumentParser:
     recon_p.add_argument("--input", "-i", required=True, help="Input images directory")
     recon_p.add_argument("--output", "-o", help="Output directory")
     recon_p.add_argument(
-        "--method", default="gaussian_splatting",
+        "--method",
+        default="gaussian_splatting",
         choices=["gaussian_splatting", "nerf", "feed_forward_3dgs"],
     )
 
@@ -165,7 +166,9 @@ def build_parser() -> argparse.ArgumentParser:
     export_p = subparsers.add_parser("export", help="Export model")
     export_p.add_argument("--checkpoint", "-ckpt", required=True, help="Model checkpoint")
     export_p.add_argument(
-        "--format", "-f", default="ply",
+        "--format",
+        "-f",
+        default="ply",
         choices=["ply", "obj", "onnx", "splat"],
     )
     export_p.add_argument("--output", "-o", help="Output path")

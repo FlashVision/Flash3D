@@ -129,4 +129,5 @@ class Flash3DConfig:
 
     def to_dict(self) -> dict[str, Any]:
         import dataclasses
+
         return dataclasses.asdict(self)

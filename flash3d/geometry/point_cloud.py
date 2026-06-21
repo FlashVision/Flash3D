@@ -141,10 +141,13 @@ class PointCloud:
 
         colors = None
         if "red" in vertex.data.dtype.names:
-            colors = torch.tensor(
-                np.stack([vertex["red"], vertex["green"], vertex["blue"]], axis=-1),
-                dtype=torch.float32,
-            ) / 255.0
+            colors = (
+                torch.tensor(
+                    np.stack([vertex["red"], vertex["green"], vertex["blue"]], axis=-1),
+                    dtype=torch.float32,
+                )
+                / 255.0
+            )
 
         normals = None
         if "nx" in vertex.data.dtype.names:
@@ -171,8 +174,14 @@ class PointCloud:
 
         if self.colors is not None:
             colors_np = (self.colors.cpu().numpy() * 255).astype(np.uint8)
-            dtype_color = [("x", "f4"), ("y", "f4"), ("z", "f4"),
-                          ("red", "u1"), ("green", "u1"), ("blue", "u1")]
+            dtype_color = [
+                ("x", "f4"),
+                ("y", "f4"),
+                ("z", "f4"),
+                ("red", "u1"),
+                ("green", "u1"),
+                ("blue", "u1"),
+            ]
             data_color = np.zeros(self.num_points, dtype=dtype_color)
             data_color["x"] = pts[:, 0]
             data_color["y"] = pts[:, 1]

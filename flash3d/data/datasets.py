@@ -112,11 +112,25 @@ class COLMAPDataset(Dataset):
             return np.eye(3)
         q *= np.sqrt(2.0 / n)
         q_outer = np.outer(q, q)
-        return np.array([
-            [1.0 - q_outer[2, 2] - q_outer[3, 3], q_outer[1, 2] - q_outer[3, 0], q_outer[1, 3] + q_outer[2, 0]],
-            [q_outer[1, 2] + q_outer[3, 0], 1.0 - q_outer[1, 1] - q_outer[3, 3], q_outer[2, 3] - q_outer[1, 0]],
-            [q_outer[1, 3] - q_outer[2, 0], q_outer[2, 3] + q_outer[1, 0], 1.0 - q_outer[1, 1] - q_outer[2, 2]],
-        ])
+        return np.array(
+            [
+                [
+                    1.0 - q_outer[2, 2] - q_outer[3, 3],
+                    q_outer[1, 2] - q_outer[3, 0],
+                    q_outer[1, 3] + q_outer[2, 0],
+                ],
+                [
+                    q_outer[1, 2] + q_outer[3, 0],
+                    1.0 - q_outer[1, 1] - q_outer[3, 3],
+                    q_outer[2, 3] - q_outer[1, 0],
+                ],
+                [
+                    q_outer[1, 3] - q_outer[2, 0],
+                    q_outer[2, 3] + q_outer[1, 0],
+                    1.0 - q_outer[1, 1] - q_outer[2, 2],
+                ],
+            ]
+        )
 
 
 @DATASETS.register("scannet")
@@ -169,11 +183,13 @@ class ScanNetDataset(Dataset):
         self.frames = []
         for f in frame_files:
             frame_id = f.stem
-            self.frames.append({
-                "color": f,
-                "depth": self.scene_dir / "depth" / f"{frame_id}.png",
-                "pose": self.scene_dir / "pose" / f"{frame_id}.txt",
-            })
+            self.frames.append(
+                {
+                    "color": f,
+                    "depth": self.scene_dir / "depth" / f"{frame_id}.png",
+                    "pose": self.scene_dir / "pose" / f"{frame_id}.txt",
+                }
+            )
 
     def __len__(self) -> int:
         return len(self.frames)
@@ -185,9 +201,7 @@ class ScanNetDataset(Dataset):
 
         color = Image.open(frame["color"]).convert("RGB")
         color = color.resize(self.image_size, Image.LANCZOS)
-        color_tensor = torch.from_numpy(
-            np.array(color, dtype=np.float32) / 255.0
-        ).permute(2, 0, 1)
+        color_tensor = torch.from_numpy(np.array(color, dtype=np.float32) / 255.0).permute(2, 0, 1)
 
         sample: dict[str, Any] = {"image": color_tensor, "idx": idx}
 
@@ -243,10 +257,12 @@ class RealEstate10KDataset(Dataset):
                         if seq_dir.exists():
                             frames = sorted(seq_dir.glob("*.png"))
                             if len(frames) > self.num_context_views:
-                                self.sequences.append({
-                                    "dir": seq_dir,
-                                    "frames": frames,
-                                })
+                                self.sequences.append(
+                                    {
+                                        "dir": seq_dir,
+                                        "frames": frames,
+                                    }
+                                )
 
     def __len__(self) -> int:
         return len(self.sequences)
@@ -318,7 +334,9 @@ class DL3DVDataset(Dataset):
         scene_dir = self.scenes[idx] if self.scenes else self.root_dir
         images_dir = scene_dir / "images"
 
-        image_files = sorted(images_dir.glob("*.jpg"))[:self.max_views] if images_dir.exists() else []
+        image_files = (
+            sorted(images_dir.glob("*.jpg"))[: self.max_views] if images_dir.exists() else []
+        )
 
         images = []
         for img_path in image_files[:4]:

@@ -26,9 +26,7 @@ def main():
     rays_d = rays_d / rays_d.norm(dim=-1, keepdim=True)
 
     # Sample points along rays
-    points, t_vals = sample_along_rays(
-        rays_o, rays_d, near=2.0, far=6.0, num_samples=64
-    )
+    points, t_vals = sample_along_rays(rays_o, rays_d, near=2.0, far=6.0, num_samples=64)
     print(f"Sampled points shape: {points.shape}")
 
     # Query the NeRF

@@ -70,15 +70,19 @@ class HashEncoding(nn.Module):
         super().__init__()
         self.num_levels = num_levels
         self.features_per_level = features_per_level
-        self.hashmap_size = 2 ** log2_hashmap_size
+        self.hashmap_size = 2**log2_hashmap_size
 
-        growth_factor = math.exp((math.log(max_resolution) - math.log(base_resolution)) / (num_levels - 1))
+        growth_factor = math.exp(
+            (math.log(max_resolution) - math.log(base_resolution)) / (num_levels - 1)
+        )
         self.resolutions = [int(base_resolution * growth_factor**i) for i in range(num_levels)]
 
-        self.hash_tables = nn.ParameterList([
-            nn.Parameter(torch.randn(self.hashmap_size, features_per_level) * 1e-4)
-            for _ in range(num_levels)
-        ])
+        self.hash_tables = nn.ParameterList(
+            [
+                nn.Parameter(torch.randn(self.hashmap_size, features_per_level) * 1e-4)
+                for _ in range(num_levels)
+            ]
+        )
 
     @property
     def output_dim(self) -> int:
@@ -111,9 +115,18 @@ class HashEncoding(nn.Module):
 
         # Hash the 8 corners of the voxel
         offsets = torch.tensor(
-            [[0, 0, 0], [1, 0, 0], [0, 1, 0], [0, 0, 1],
-             [1, 1, 0], [1, 0, 1], [0, 1, 1], [1, 1, 1]],
-            device=x.device, dtype=torch.long,
+            [
+                [0, 0, 0],
+                [1, 0, 0],
+                [0, 1, 0],
+                [0, 0, 1],
+                [1, 1, 0],
+                [1, 0, 1],
+                [0, 1, 1],
+                [1, 1, 1],
+            ],
+            device=x.device,
+            dtype=torch.long,
         )
 
         corners = floor_coords.unsqueeze(-2) + offsets
@@ -126,10 +139,18 @@ class HashEncoding(nn.Module):
         wy = frac[..., 1:2].unsqueeze(-2)
         wz = frac[..., 2:3].unsqueeze(-2)
 
-        c00 = corner_features[..., 0, :] * (1 - wx.squeeze(-2)) + corner_features[..., 1, :] * wx.squeeze(-2)
-        c01 = corner_features[..., 2, :] * (1 - wx.squeeze(-2)) + corner_features[..., 4, :] * wx.squeeze(-2)
-        c10 = corner_features[..., 3, :] * (1 - wx.squeeze(-2)) + corner_features[..., 5, :] * wx.squeeze(-2)
-        c11 = corner_features[..., 6, :] * (1 - wx.squeeze(-2)) + corner_features[..., 7, :] * wx.squeeze(-2)
+        c00 = corner_features[..., 0, :] * (1 - wx.squeeze(-2)) + corner_features[
+            ..., 1, :
+        ] * wx.squeeze(-2)
+        c01 = corner_features[..., 2, :] * (1 - wx.squeeze(-2)) + corner_features[
+            ..., 4, :
+        ] * wx.squeeze(-2)
+        c10 = corner_features[..., 3, :] * (1 - wx.squeeze(-2)) + corner_features[
+            ..., 5, :
+        ] * wx.squeeze(-2)
+        c11 = corner_features[..., 6, :] * (1 - wx.squeeze(-2)) + corner_features[
+            ..., 7, :
+        ] * wx.squeeze(-2)
 
         c0 = c00 * (1 - wy.squeeze(-2)) + c01 * wy.squeeze(-2)
         c1 = c10 * (1 - wy.squeeze(-2)) + c11 * wy.squeeze(-2)
@@ -283,6 +304,7 @@ class NeRF(nn.Module):
 
         if rays_o is None:
             from flash3d.rendering.cameras import generate_rays
+
             width = camera.get("image_width", 800)
             height = camera.get("image_height", 800)
             if isinstance(width, torch.Tensor):

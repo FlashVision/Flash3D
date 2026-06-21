@@ -34,6 +34,7 @@ class Benchmark:
             self.model = model
         elif checkpoint_path is not None:
             from flash3d.models.flash3d_model import Flash3D
+
             self.model = Flash3D.from_pretrained(checkpoint_path).to(self.device)
         else:
             self.model = None
@@ -103,7 +104,9 @@ class Benchmark:
 
         if results["timing"]:
             results["summary"]["fps"] = 1.0 / (sum(results["timing"]) / len(results["timing"]))
-            results["summary"]["avg_time_ms"] = sum(results["timing"]) / len(results["timing"]) * 1000
+            results["summary"]["avg_time_ms"] = (
+                sum(results["timing"]) / len(results["timing"]) * 1000
+            )
 
         if results["memory"]:
             results["summary"]["peak_memory_gb"] = max(results["memory"])
@@ -119,14 +122,20 @@ class Benchmark:
         summary = results.get("summary", {})
 
         if "psnr" in summary:
-            print(f"  PSNR:  {summary['psnr']['mean']:.2f} dB "
-                  f"(min: {summary['psnr']['min']:.2f}, max: {summary['psnr']['max']:.2f})")
+            print(
+                f"  PSNR:  {summary['psnr']['mean']:.2f} dB "
+                f"(min: {summary['psnr']['min']:.2f}, max: {summary['psnr']['max']:.2f})"
+            )
         if "ssim" in summary:
-            print(f"  SSIM:  {summary['ssim']['mean']:.4f} "
-                  f"(min: {summary['ssim']['min']:.4f}, max: {summary['ssim']['max']:.4f})")
+            print(
+                f"  SSIM:  {summary['ssim']['mean']:.4f} "
+                f"(min: {summary['ssim']['min']:.4f}, max: {summary['ssim']['max']:.4f})"
+            )
         if "lpips" in summary:
-            print(f"  LPIPS: {summary['lpips']['mean']:.4f} "
-                  f"(min: {summary['lpips']['min']:.4f}, max: {summary['lpips']['max']:.4f})")
+            print(
+                f"  LPIPS: {summary['lpips']['mean']:.4f} "
+                f"(min: {summary['lpips']['min']:.4f}, max: {summary['lpips']['max']:.4f})"
+            )
         if "fps" in summary:
             print(f"  FPS:   {summary['fps']:.1f}")
             print(f"  Avg render time: {summary['avg_time_ms']:.1f} ms")

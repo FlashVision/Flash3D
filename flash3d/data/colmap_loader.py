@@ -24,16 +24,21 @@ from flash3d.data.colmap_utils import (
 def qvec_to_rotation_matrix(qvec: np.ndarray) -> np.ndarray:
     """Convert quaternion (w, x, y, z) to 3x3 rotation matrix."""
     w, x, y, z = qvec
-    R = np.array([
-        [1 - 2*y*y - 2*z*z, 2*x*y - 2*w*z, 2*x*z + 2*w*y],
-        [2*x*y + 2*w*z, 1 - 2*x*x - 2*z*z, 2*y*z - 2*w*x],
-        [2*x*z - 2*w*y, 2*y*z + 2*w*x, 1 - 2*x*x - 2*y*y],
-    ])
+    R = np.array(
+        [
+            [1 - 2 * y * y - 2 * z * z, 2 * x * y - 2 * w * z, 2 * x * z + 2 * w * y],
+            [2 * x * y + 2 * w * z, 1 - 2 * x * x - 2 * z * z, 2 * y * z - 2 * w * x],
+            [2 * x * z - 2 * w * y, 2 * y * z + 2 * w * x, 1 - 2 * x * x - 2 * y * y],
+        ]
+    )
     return R
 
 
 def camera_params_to_intrinsics(
-    model_name: str, params: np.ndarray, width: int, height: int,
+    model_name: str,
+    params: np.ndarray,
+    width: int,
+    height: int,
 ) -> np.ndarray:
     """Convert COLMAP camera parameters to 3x3 intrinsic matrix."""
     K = np.eye(3)
@@ -164,7 +169,10 @@ class COLMAPScene:
         cam_data = self.cameras[img_data["camera_id"]]
         model_name = cam_data.get("model_name", str(cam_data.get("model_id", "")))
         return camera_params_to_intrinsics(
-            model_name, cam_data["params"], cam_data["width"], cam_data["height"],
+            model_name,
+            cam_data["params"],
+            cam_data["width"],
+            cam_data["height"],
         )
 
     def get_extrinsics(self, image_id: int) -> np.ndarray:
@@ -195,7 +203,8 @@ class COLMAPScene:
         return points, colors
 
     def get_point_cloud_torch(
-        self, device: str = "cpu",
+        self,
+        device: str = "cpu",
     ) -> tuple[torch.Tensor, torch.Tensor]:
         """Get point cloud as PyTorch tensors."""
         pts, cols = self.get_point_cloud()
@@ -205,7 +214,8 @@ class COLMAPScene:
         )
 
     def get_all_cameras_torch(
-        self, device: str = "cpu",
+        self,
+        device: str = "cpu",
     ) -> list[dict[str, torch.Tensor]]:
         """Get all camera parameters as PyTorch tensors.
 
@@ -224,28 +234,31 @@ class COLMAPScene:
 
             proj = _make_projection_matrix(fx, fy, cx, cy, W, H, 0.01, 100.0)
 
-            camera_list.append({
-                "image_id": image_id,
-                "image_name": img_data["name"],
-                "image_width": W,
-                "image_height": H,
-                "intrinsics": torch.from_numpy(K).float().to(device),
-                "extrinsics": torch.from_numpy(w2c).float().to(device),
-                "camera_to_world": torch.from_numpy(c2w).float().to(device),
-                "viewmatrix": torch.from_numpy(w2c).float().to(device),
-                "projmatrix": torch.from_numpy(proj).float().to(device),
-                "camera_center": torch.from_numpy(c2w[:3, 3]).float().to(device),
-            })
+            camera_list.append(
+                {
+                    "image_id": image_id,
+                    "image_name": img_data["name"],
+                    "image_width": W,
+                    "image_height": H,
+                    "intrinsics": torch.from_numpy(K).float().to(device),
+                    "extrinsics": torch.from_numpy(w2c).float().to(device),
+                    "camera_to_world": torch.from_numpy(c2w).float().to(device),
+                    "viewmatrix": torch.from_numpy(w2c).float().to(device),
+                    "projmatrix": torch.from_numpy(proj).float().to(device),
+                    "camera_center": torch.from_numpy(c2w[:3, 3]).float().to(device),
+                }
+            )
 
         return camera_list
 
     def split_train_test(
-        self, test_ratio: float = 0.1,
+        self,
+        test_ratio: float = 0.1,
     ) -> tuple[list[int], list[int]]:
         """Split image IDs into train and test sets."""
         image_ids = sorted(self.images.keys())
         n_test = max(1, int(len(image_ids) * test_ratio))
-        test_ids = image_ids[::len(image_ids) // n_test][:n_test]
+        test_ids = image_ids[:: len(image_ids) // n_test][:n_test]
         train_ids = [i for i in image_ids if i not in test_ids]
         return train_ids, test_ids
 
@@ -275,8 +288,14 @@ class COLMAPScene:
 
 
 def _make_projection_matrix(
-    fx: float, fy: float, cx: float, cy: float,
-    width: int, height: int, near: float, far: float,
+    fx: float,
+    fy: float,
+    cx: float,
+    cy: float,
+    width: int,
+    height: int,
+    near: float,
+    far: float,
 ) -> np.ndarray:
     """Build a 4x4 OpenGL-style projection matrix."""
     proj = np.zeros((4, 4))

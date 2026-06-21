@@ -20,6 +20,7 @@ class Camera:
         t: (3,) translation vector.
         near, far: Clipping planes.
     """
+
     fx: float
     fy: float
     cx: float
@@ -120,11 +121,14 @@ def generate_rays(
     v = torch.arange(height, device=device, dtype=torch.float32)
     v_grid, u_grid = torch.meshgrid(v, u, indexing="ij")
 
-    dirs_cam = torch.stack([
-        (u_grid - cx) / fx,
-        (v_grid - cy) / fy,
-        torch.ones_like(u_grid),
-    ], dim=-1)
+    dirs_cam = torch.stack(
+        [
+            (u_grid - cx) / fx,
+            (v_grid - cy) / fy,
+            torch.ones_like(u_grid),
+        ],
+        dim=-1,
+    )
 
     dirs_cam = dirs_cam.reshape(-1, 3)
 
@@ -207,12 +211,20 @@ def interpolate_cameras(
         else:
             trans = cam_start.t
 
-        cameras.append(Camera(
-            fx=fx, fy=fy, cx=cx, cy=cy,
-            width=cam_start.width, height=cam_start.height,
-            R=R, t=trans,
-            near=cam_start.near, far=cam_start.far,
-        ))
+        cameras.append(
+            Camera(
+                fx=fx,
+                fy=fy,
+                cx=cx,
+                cy=cy,
+                width=cam_start.width,
+                height=cam_start.height,
+                R=R,
+                t=trans,
+                near=cam_start.near,
+                far=cam_start.far,
+            )
+        )
 
     return cameras
 
@@ -242,5 +254,9 @@ def _slerp_rotation(R1: torch.Tensor, R2: torch.Tensor, t: float) -> torch.Tenso
     K[2, 0] = -axis[1]
     K[2, 1] = axis[0]
 
-    R_interp = torch.eye(3, device=R1.device) + torch.sin(axis_angle) * K + (1 - torch.cos(axis_angle)) * (K @ K)
+    R_interp = (
+        torch.eye(3, device=R1.device)
+        + torch.sin(axis_angle) * K
+        + (1 - torch.cos(axis_angle)) * (K @ K)
+    )
     return R_interp @ R1

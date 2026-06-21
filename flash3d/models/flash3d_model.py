@@ -78,7 +78,6 @@ class Flash3D(nn.Module):
         elif isinstance(config_data, Flash3DConfig):
             config = config_data
         elif isinstance(config_data, dict):
-
             config = Flash3DConfig()
             for k, v in config_data.items():
                 if k == "model" and isinstance(v, dict):

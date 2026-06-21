@@ -147,10 +147,9 @@ class FeedForward3DGS(nn.Module):
 
         self.proj = nn.Conv2d(feat_dim, 256, 1)
 
-        self.cross_view_layers = nn.ModuleList([
-            CrossViewAttention(embed_dim=256, num_heads=8)
-            for _ in range(num_attention_layers)
-        ])
+        self.cross_view_layers = nn.ModuleList(
+            [CrossViewAttention(embed_dim=256, num_heads=8) for _ in range(num_attention_layers)]
+        )
 
         self.gaussian_head = GaussianHead(in_channels=256, sh_degree=sh_degree)
 
@@ -206,7 +205,9 @@ class FeedForward3DGS(nn.Module):
 
         target_size = (H, W)
         if ref_features.shape[-2:] != target_size:
-            ref_features = F.interpolate(ref_features, size=target_size, mode="bilinear", align_corners=False)
+            ref_features = F.interpolate(
+                ref_features, size=target_size, mode="bilinear", align_corners=False
+            )
 
         gaussians = self.gaussian_head(ref_features)
         gaussians["features"] = ref_features

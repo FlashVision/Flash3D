@@ -82,9 +82,16 @@ class Exporter:
         num_sh = sh_coeffs.shape[1]
 
         dtype_list = [
-            ("x", "f4"), ("y", "f4"), ("z", "f4"),
-            ("scale_0", "f4"), ("scale_1", "f4"), ("scale_2", "f4"),
-            ("rot_0", "f4"), ("rot_1", "f4"), ("rot_2", "f4"), ("rot_3", "f4"),
+            ("x", "f4"),
+            ("y", "f4"),
+            ("z", "f4"),
+            ("scale_0", "f4"),
+            ("scale_1", "f4"),
+            ("scale_2", "f4"),
+            ("rot_0", "f4"),
+            ("rot_1", "f4"),
+            ("rot_2", "f4"),
+            ("rot_3", "f4"),
             ("opacity", "f4"),
         ]
         for i in range(min(num_sh * 3, 48)):
@@ -122,12 +129,14 @@ class Exporter:
         output_path.parent.mkdir(parents=True, exist_ok=True)
 
         if hasattr(self.model.backbone, "query"):
+
             def query_fn(pts: torch.Tensor) -> torch.Tensor:
                 dirs = torch.zeros_like(pts)
                 dirs[:, 2] = 1.0
                 density, _ = self.model.backbone.query(pts.to(self.device), dirs.to(self.device))
                 return density.cpu()
         else:
+
             def query_fn(pts: torch.Tensor) -> torch.Tensor:
                 return torch.zeros(pts.shape[0])
 
@@ -176,6 +185,7 @@ class Exporter:
 
         # .splat binary format: [x,y,z, scale_x,scale_y,scale_z, r,g,b,a, qw,qx,qy,qz] per Gaussian
         from flash3d.rendering.sh_utils import sh_to_rgb
+
         sh0 = backbone.sh_coeffs[:, 0].detach().cpu()
         colors = sh_to_rgb(sh0).clamp(0, 1).numpy().astype(np.float32)
 
@@ -184,7 +194,9 @@ class Exporter:
             for i in range(N):
                 f.write(means[i].tobytes())
                 f.write(scales[i].tobytes())
-                rgb_a = np.array([colors[i, 0], colors[i, 1], colors[i, 2], opacities[i, 0]], dtype=np.float32)
+                rgb_a = np.array(
+                    [colors[i, 0], colors[i, 1], colors[i, 2], opacities[i, 0]], dtype=np.float32
+                )
                 f.write(rgb_a.tobytes())
                 f.write(rotations[i].tobytes())
 

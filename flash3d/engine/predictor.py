@@ -46,8 +46,10 @@ class Predictor:
             Dict with 'rgb', 'depth', 'alpha' tensors.
         """
         camera_dict = camera.to_dict()
-        camera_dict = {k: v.to(self.device) if isinstance(v, torch.Tensor) else v
-                      for k, v in camera_dict.items()}
+        camera_dict = {
+            k: v.to(self.device) if isinstance(v, torch.Tensor) else v
+            for k, v in camera_dict.items()
+        }
         return self.model.render(camera_dict)
 
     @torch.no_grad()
@@ -111,8 +113,10 @@ class Predictor:
         """
         images = images.to(self.device)
         if cameras is not None:
-            cameras = {k: v.to(self.device) if isinstance(v, torch.Tensor) else v
-                      for k, v in cameras.items()}
+            cameras = {
+                k: v.to(self.device) if isinstance(v, torch.Tensor) else v
+                for k, v in cameras.items()
+            }
         return self.model(cameras=cameras, images=images)
 
     def _generate_orbit_cameras(self, num_frames: int) -> list[Camera]:
@@ -136,14 +140,20 @@ class Predictor:
             up = torch.tensor([0.0, 1.0, 0.0])
 
             from flash3d.geometry.transforms_3d import look_at
+
             view_mat = look_at(eye, center, up)
 
-            cameras.append(Camera(
-                fx=fx, fy=fy,
-                cx=width / 2, cy=height / 2,
-                width=width, height=height,
-                R=view_mat[:3, :3],
-                t=view_mat[:3, 3],
-            ))
+            cameras.append(
+                Camera(
+                    fx=fx,
+                    fy=fy,
+                    cx=width / 2,
+                    cy=height / 2,
+                    width=width,
+                    height=height,
+                    R=view_mat[:3, :3],
+                    t=view_mat[:3, 3],
+                )
+            )
 
         return cameras

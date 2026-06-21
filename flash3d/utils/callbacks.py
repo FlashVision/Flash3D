@@ -60,6 +60,7 @@ class LoggingCallback(TrainingCallback):
         if self.use_tensorboard:
             try:
                 from torch.utils.tensorboard import SummaryWriter
+
                 self.writer = SummaryWriter()
             except ImportError:
                 pass
@@ -67,6 +68,7 @@ class LoggingCallback(TrainingCallback):
         if self.use_wandb:
             try:
                 import wandb
+
                 wandb.init(project=self.project_name)
             except ImportError:
                 pass
@@ -81,6 +83,7 @@ class LoggingCallback(TrainingCallback):
         if self.use_wandb:
             try:
                 import wandb
+
                 wandb.log({"train/loss": loss, "iteration": iteration})
             except (ImportError, Exception):
                 pass
@@ -91,6 +94,7 @@ class LoggingCallback(TrainingCallback):
         if self.use_wandb:
             try:
                 import wandb
+
                 wandb.finish()
             except (ImportError, Exception):
                 pass

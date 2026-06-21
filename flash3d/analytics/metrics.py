@@ -53,7 +53,7 @@ def compute_ssim(
     # Gaussian window
     sigma = 1.5
     coords = torch.arange(window_size, dtype=torch.float32, device=pred.device) - window_size // 2
-    gauss = torch.exp(-(coords ** 2) / (2 * sigma ** 2))
+    gauss = torch.exp(-(coords**2) / (2 * sigma**2))
     gauss = gauss / gauss.sum()
     window = gauss.unsqueeze(1) * gauss.unsqueeze(0)
     window = window.unsqueeze(0).unsqueeze(0).expand(channels, 1, -1, -1)
@@ -63,8 +63,8 @@ def compute_ssim(
     mu_pred = F.conv2d(pred, window, padding=pad, groups=channels)
     mu_target = F.conv2d(target, window, padding=pad, groups=channels)
 
-    mu_pred_sq = mu_pred ** 2
-    mu_target_sq = mu_target ** 2
+    mu_pred_sq = mu_pred**2
+    mu_target_sq = mu_target**2
     mu_cross = mu_pred * mu_target
 
     sigma_pred_sq = F.conv2d(pred * pred, window, padding=pad, groups=channels) - mu_pred_sq

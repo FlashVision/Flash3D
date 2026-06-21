@@ -23,6 +23,7 @@ class DepthPredictionTask:
     def setup(self) -> None:
         """Initialize the depth estimation model."""
         from flash3d.geometry.depth import MonocularDepthEstimator
+
         self.model = MonocularDepthEstimator()
 
     def predict(self, image: torch.Tensor) -> torch.Tensor:
@@ -50,4 +51,5 @@ class DepthPredictionTask:
     ) -> dict[str, float]:
         """Compute depth estimation metrics."""
         from flash3d.geometry.depth import compute_depth_metrics
+
         return compute_depth_metrics(pred, target, mask)

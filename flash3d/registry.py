@@ -51,8 +51,7 @@ class Registry:
         """Retrieve a registered component by name."""
         if name not in self._registry:
             raise KeyError(
-                f"'{name}' not found in {self._name}. "
-                f"Available: {self.registered_names}"
+                f"'{name}' not found in {self._name}. Available: {self.registered_names}"
             )
         return self._registry[name]
 

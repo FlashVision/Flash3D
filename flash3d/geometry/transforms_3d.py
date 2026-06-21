@@ -117,11 +117,15 @@ def rotation_matrix_from_euler(
     cp, sp = math.cos(pitch), math.sin(pitch)
     cy, sy = math.cos(yaw), math.sin(yaw)
 
-    R = torch.tensor([
-        [cy*cp, cy*sp*sr - sy*cr, cy*sp*cr + sy*sr],
-        [sy*cp, sy*sp*sr + cy*cr, sy*sp*cr - cy*sr],
-        [-sp, cp*sr, cp*cr],
-    ], device=device, dtype=torch.float32)
+    R = torch.tensor(
+        [
+            [cy * cp, cy * sp * sr - sy * cr, cy * sp * cr + sy * sr],
+            [sy * cp, sy * sp * sr + cy * cr, sy * sp * cr - cy * sr],
+            [-sp, cp * sr, cp * cr],
+        ],
+        device=device,
+        dtype=torch.float32,
+    )
 
     return R
 
@@ -138,11 +142,20 @@ def quaternion_to_rotation_matrix(q: torch.Tensor) -> torch.Tensor:
     q = F.normalize(q, dim=-1)
     w, x, y, z = q[..., 0], q[..., 1], q[..., 2], q[..., 3]
 
-    R = torch.stack([
-        1 - 2*(y*y + z*z), 2*(x*y - w*z), 2*(x*z + w*y),
-        2*(x*y + w*z), 1 - 2*(x*x + z*z), 2*(y*z - w*x),
-        2*(x*z - w*y), 2*(y*z + w*x), 1 - 2*(x*x + y*y),
-    ], dim=-1).reshape(*q.shape[:-1], 3, 3)
+    R = torch.stack(
+        [
+            1 - 2 * (y * y + z * z),
+            2 * (x * y - w * z),
+            2 * (x * z + w * y),
+            2 * (x * y + w * z),
+            1 - 2 * (x * x + z * z),
+            2 * (y * z - w * x),
+            2 * (x * z - w * y),
+            2 * (y * z + w * x),
+            1 - 2 * (x * x + y * y),
+        ],
+        dim=-1,
+    ).reshape(*q.shape[:-1], 3, 3)
 
     return R
 

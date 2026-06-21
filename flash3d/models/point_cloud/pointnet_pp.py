@@ -57,7 +57,10 @@ def farthest_point_sample(xyz: torch.Tensor, n_points: int) -> torch.Tensor:
 
 
 def query_ball_point(
-    radius: float, n_sample: int, xyz: torch.Tensor, new_xyz: torch.Tensor,
+    radius: float,
+    n_sample: int,
+    xyz: torch.Tensor,
+    new_xyz: torch.Tensor,
 ) -> torch.Tensor:
     """Ball query: find all points within radius of query points.
 
@@ -77,7 +80,7 @@ def query_ball_point(
     dists = square_distance(new_xyz, xyz)
     group_idx = torch.arange(N, device=device).unsqueeze(0).unsqueeze(0).expand(B, S, N)
     group_idx = group_idx.clone()
-    group_idx[dists > radius ** 2] = N
+    group_idx[dists > radius**2] = N
 
     group_idx = group_idx.sort(dim=-1).values[:, :, :n_sample]
     group_first = group_idx[:, :, 0:1].expand_as(group_idx)
@@ -134,7 +137,9 @@ class PointNetSetAbstraction(nn.Module):
             last_channel = out_channel
 
     def forward(
-        self, xyz: torch.Tensor, points: torch.Tensor | None,
+        self,
+        xyz: torch.Tensor,
+        points: torch.Tensor | None,
     ) -> tuple[torch.Tensor, torch.Tensor]:
         """
         Args:
@@ -160,7 +165,9 @@ class PointNetSetAbstraction(nn.Module):
         return new_xyz, new_points
 
     def _sample_and_group(
-        self, xyz: torch.Tensor, points: torch.Tensor | None,
+        self,
+        xyz: torch.Tensor,
+        points: torch.Tensor | None,
     ) -> tuple[torch.Tensor, torch.Tensor]:
         fps_idx = farthest_point_sample(xyz, self.n_point)
         new_xyz = index_points(xyz, fps_idx)
@@ -176,7 +183,9 @@ class PointNetSetAbstraction(nn.Module):
         return new_xyz, new_points
 
     def _sample_and_group_all(
-        self, xyz: torch.Tensor, points: torch.Tensor | None,
+        self,
+        xyz: torch.Tensor,
+        points: torch.Tensor | None,
     ) -> tuple[torch.Tensor, torch.Tensor]:
         B, N, _ = xyz.shape
         new_xyz = torch.zeros(B, 1, 3, device=xyz.device)
@@ -222,7 +231,9 @@ class PointNetSetAbstractionMSG(nn.Module):
             self.bn_blocks.append(bns)
 
     def forward(
-        self, xyz: torch.Tensor, points: torch.Tensor | None,
+        self,
+        xyz: torch.Tensor,
+        points: torch.Tensor | None,
     ) -> tuple[torch.Tensor, torch.Tensor]:
         fps_idx = farthest_point_sample(xyz, self.n_point)
         new_xyz = index_points(xyz, fps_idx)
@@ -323,26 +334,49 @@ class PointNetPP(nn.Module):
 
         if use_msg:
             self.sa1 = PointNetSetAbstractionMSG(
-                512, [0.1, 0.2, 0.4], [16, 32, 128], in_channel,
+                512,
+                [0.1, 0.2, 0.4],
+                [16, 32, 128],
+                in_channel,
                 [[32, 32, 64], [64, 64, 128], [64, 96, 128]],
             )
             self.sa2 = PointNetSetAbstractionMSG(
-                128, [0.2, 0.4, 0.8], [32, 64, 128], 320,
+                128,
+                [0.2, 0.4, 0.8],
+                [32, 64, 128],
+                320,
                 [[64, 64, 128], [128, 128, 256], [128, 128, 256]],
             )
             self.sa3 = PointNetSetAbstraction(
-                n_point=0, radius=0, n_sample=0, in_channel=640,
-                mlp_channels=[256, 512, 1024], group_all=True,
+                n_point=0,
+                radius=0,
+                n_sample=0,
+                in_channel=640,
+                mlp_channels=[256, 512, 1024],
+                group_all=True,
             )
         else:
             self.sa1 = PointNetSetAbstraction(
-                512, 0.2, 32, in_channel, [64, 64, 128],
+                512,
+                0.2,
+                32,
+                in_channel,
+                [64, 64, 128],
             )
             self.sa2 = PointNetSetAbstraction(
-                128, 0.4, 64, 128, [128, 128, 256],
+                128,
+                0.4,
+                64,
+                128,
+                [128, 128, 256],
             )
             self.sa3 = PointNetSetAbstraction(
-                0, 0, 0, 256, [256, 512, 1024], group_all=True,
+                0,
+                0,
+                0,
+                256,
+                [256, 512, 1024],
+                group_all=True,
             )
 
     @property
@@ -350,7 +384,9 @@ class PointNetPP(nn.Module):
         return 1024
 
     def forward(
-        self, xyz: torch.Tensor, features: torch.Tensor | None = None,
+        self,
+        xyz: torch.Tensor,
+        features: torch.Tensor | None = None,
     ) -> tuple[torch.Tensor, torch.Tensor, list]:
         """Extract hierarchical features.
 
@@ -425,7 +461,9 @@ class PointNetPPSegmentor(nn.Module):
         )
 
     def forward(
-        self, xyz: torch.Tensor, features: torch.Tensor | None = None,
+        self,
+        xyz: torch.Tensor,
+        features: torch.Tensor | None = None,
     ) -> torch.Tensor:
         l0_xyz, l0_points = xyz, features
         l1_xyz, l1_points = self.sa1(l0_xyz, l0_points)

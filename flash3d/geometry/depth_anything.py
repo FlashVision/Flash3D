@@ -45,7 +45,9 @@ class DepthAnythingV2(nn.Module):
         self._model = None
         self._processor = None
         self._variant = variant
-        self._model_name = model_name or self.MODEL_VARIANTS.get(variant, self.MODEL_VARIANTS["small"])
+        self._model_name = model_name or self.MODEL_VARIANTS.get(
+            variant, self.MODEL_VARIANTS["small"]
+        )
         self._fallback = False
 
         if device == "auto":
@@ -61,7 +63,8 @@ class DepthAnythingV2(nn.Module):
 
             self._processor = AutoImageProcessor.from_pretrained(self._model_name)
             self._model = AutoModelForDepthEstimation.from_pretrained(
-                self._model_name, torch_dtype=torch.float32,
+                self._model_name,
+                torch_dtype=torch.float32,
             )
             self._model.to(self._device)
             self._model.eval()
@@ -72,8 +75,10 @@ class DepthAnythingV2(nn.Module):
             print(f"Warning: Could not load Depth Anything v2 ({self._model_name}): {e}")
             print("Using fallback U-Net depth estimator.")
             from flash3d.geometry.depth import MonocularDepthEstimator
+
             self._model = MonocularDepthEstimator(
-                min_depth=0.01, max_depth=self.max_depth,
+                min_depth=0.01,
+                max_depth=self.max_depth,
             )
             self._model.to(self._device)
             self._fallback = True
@@ -94,6 +99,7 @@ class DepthAnythingV2(nn.Module):
         if self._processor is not None:
             import numpy as np
             from PIL import Image as PILImage
+
             results = []
             for i in range(image.shape[0]):
                 img_np = image[i].cpu().permute(1, 2, 0).numpy()
@@ -107,7 +113,10 @@ class DepthAnythingV2(nn.Module):
                 outputs = self._model(**inputs)
                 depth = outputs.predicted_depth.unsqueeze(1)
                 depth = F.interpolate(
-                    depth, size=image.shape[2:], mode="bilinear", align_corners=False,
+                    depth,
+                    size=image.shape[2:],
+                    mode="bilinear",
+                    align_corners=False,
                 )
                 results.append(depth)
             return torch.cat(results, dim=0)
@@ -135,10 +144,12 @@ class DepthAnythingV2(nn.Module):
             image = PILImage.open(image).convert("RGB")
 
         if isinstance(image, PILImage.Image):
-            transform = transforms.Compose([
-                transforms.Resize((518, 518)),
-                transforms.ToTensor(),
-            ])
+            transform = transforms.Compose(
+                [
+                    transforms.Resize((518, 518)),
+                    transforms.ToTensor(),
+                ]
+            )
             tensor = transform(image).unsqueeze(0).to(self._device)
         else:
             tensor = image
@@ -150,7 +161,10 @@ class DepthAnythingV2(nn.Module):
 
         if output_size is not None:
             depth = F.interpolate(
-                depth, size=output_size, mode="bilinear", align_corners=False,
+                depth,
+                size=output_size,
+                mode="bilinear",
+                align_corners=False,
             )
 
         return depth
@@ -178,7 +192,8 @@ class DepthAnythingV2(nn.Module):
         return depth_to_point_cloud(depth_2d, intrinsics, ext)
 
     def batch_predict(
-        self, images: list[torch.Tensor],
+        self,
+        images: list[torch.Tensor],
     ) -> list[torch.Tensor]:
         """Predict depth for multiple images."""
         return [self.predict(img) for img in images]

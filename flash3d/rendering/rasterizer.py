@@ -78,9 +78,15 @@ def rasterize_gaussians(
 
     # Compute 2D covariance from 3D covariance projected
     cov2d = _compute_cov2d(
-        means3d, scales, rotations, viewmatrix, projmatrix,
-        image_width, image_height,
-        antialias=antialias, mip_filter_size=mip_filter_size,
+        means3d,
+        scales,
+        rotations,
+        viewmatrix,
+        projmatrix,
+        image_width,
+        image_height,
+        antialias=antialias,
+        mip_filter_size=mip_filter_size,
     )
 
     # Evaluate SH for view-dependent color
@@ -150,10 +156,15 @@ def rasterize_gaussians(
                 if det < 1e-6:
                     continue
 
-                inv_cov = torch.stack([
-                    torch.stack([cov[1, 1], -cov[0, 1]]),
-                    torch.stack([-cov[1, 0], cov[0, 0]]),
-                ]) / det
+                inv_cov = (
+                    torch.stack(
+                        [
+                            torch.stack([cov[1, 1], -cov[0, 1]]),
+                            torch.stack([-cov[1, 0], cov[0, 0]]),
+                        ]
+                    )
+                    / det
+                )
 
                 mahal = (diff @ inv_cov * diff).sum(dim=-1)
                 gauss_weight = torch.exp(-0.5 * mahal)
@@ -162,11 +173,11 @@ def rasterize_gaussians(
                 weight = alpha * remaining_alpha
 
                 rgb_contribution = weight.unsqueeze(-1) * color.unsqueeze(0)
-                rgb_image[:, y_start:y_end, x_start:x_end] += (
-                    rgb_contribution.reshape(H_tile, W_tile, 3).permute(2, 0, 1)
-                )
-                depth_image[0, y_start:y_end, x_start:x_end] += (
-                    (weight * depth_val).reshape(H_tile, W_tile)
+                rgb_image[:, y_start:y_end, x_start:x_end] += rgb_contribution.reshape(
+                    H_tile, W_tile, 3
+                ).permute(2, 0, 1)
+                depth_image[0, y_start:y_end, x_start:x_end] += (weight * depth_val).reshape(
+                    H_tile, W_tile
                 )
                 alpha_image[0, y_start:y_end, x_start:x_end] += weight.reshape(H_tile, W_tile)
 
@@ -208,11 +219,20 @@ def _compute_cov2d(
 
     S = torch.diag_embed(scales)
     w, x, y, z = rotations[:, 0], rotations[:, 1], rotations[:, 2], rotations[:, 3]
-    R = torch.stack([
-        1 - 2*(y*y + z*z), 2*(x*y - w*z), 2*(x*z + w*y),
-        2*(x*y + w*z), 1 - 2*(x*x + z*z), 2*(y*z - w*x),
-        2*(x*z - w*y), 2*(y*z + w*x), 1 - 2*(x*x + y*y),
-    ], dim=-1).reshape(N, 3, 3)
+    R = torch.stack(
+        [
+            1 - 2 * (y * y + z * z),
+            2 * (x * y - w * z),
+            2 * (x * z + w * y),
+            2 * (x * y + w * z),
+            1 - 2 * (x * x + z * z),
+            2 * (y * z - w * x),
+            2 * (x * z - w * y),
+            2 * (y * z + w * x),
+            1 - 2 * (x * x + y * y),
+        ],
+        dim=-1,
+    ).reshape(N, 3, 3)
 
     RS = R @ S
     cov3d = RS @ RS.transpose(-1, -2)
@@ -231,7 +251,7 @@ def _compute_cov2d(
         pixel_size_x = tz / fx
         pixel_size_y = tz / fy
         mip_scale = mip_filter_size * torch.stack([pixel_size_x, pixel_size_y, tz * 0.001], dim=-1)
-        mip_cov = torch.diag_embed(mip_scale ** 2)
+        mip_cov = torch.diag_embed(mip_scale**2)
         cov3d_cam = W.unsqueeze(0) @ cov3d @ W.T.unsqueeze(0)
         cov3d_cam = cov3d_cam + mip_cov
     else:

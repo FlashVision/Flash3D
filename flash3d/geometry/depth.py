@@ -200,7 +200,9 @@ def compute_depth_metrics(
     target = target[valid]
 
     if pred.numel() == 0:
-        return {k: 0.0 for k in ["abs_rel", "sq_rel", "rmse", "rmse_log", "delta1", "delta2", "delta3"]}
+        return {
+            k: 0.0 for k in ["abs_rel", "sq_rel", "rmse", "rmse_log", "delta1", "delta2", "delta3"]
+        }
 
     thresh = torch.max(pred / target, target / pred)
     delta1 = (thresh < 1.25).float().mean().item()

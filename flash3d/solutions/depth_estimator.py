@@ -90,9 +90,9 @@ class DepthEstimator:
             image_paths = [input_path]
         else:
             image_paths = sorted(
-                list(input_path.glob("*.png")) +
-                list(input_path.glob("*.jpg")) +
-                list(input_path.glob("*.jpeg"))
+                list(input_path.glob("*.png"))
+                + list(input_path.glob("*.jpg"))
+                + list(input_path.glob("*.jpeg"))
             )
 
         saved = []

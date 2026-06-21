@@ -25,11 +25,13 @@ def main():
     print(f"Depth range: [{depth.min():.3f}, {depth.max():.3f}]")
 
     # Convert depth to point cloud
-    intrinsics = torch.tensor([
-        [200.0, 0.0, 128.0],
-        [0.0, 200.0, 128.0],
-        [0.0, 0.0, 1.0],
-    ])
+    intrinsics = torch.tensor(
+        [
+            [200.0, 0.0, 128.0],
+            [0.0, 200.0, 128.0],
+            [0.0, 0.0, 1.0],
+        ]
+    )
 
     points, _ = depth_to_point_cloud(depth.squeeze(), intrinsics)
     print(f"Point cloud shape: {points.shape}")

@@ -159,7 +159,7 @@ _CAMERA_MODEL_NUM_PARAMS = {
     2: 4,  # SIMPLE_RADIAL
     3: 5,  # RADIAL
     4: 8,  # OPENCV
-    5: 12, # OPENCV_FISHEYE
+    5: 12,  # OPENCV_FISHEYE
     6: 5,  # FULL_OPENCV
 }
 

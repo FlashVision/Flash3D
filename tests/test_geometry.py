@@ -66,11 +66,13 @@ class TestDepth:
 
     def test_depth_to_point_cloud(self):
         depth = torch.rand(64, 64) * 5 + 0.5
-        intrinsics = torch.tensor([
-            [50.0, 0.0, 32.0],
-            [0.0, 50.0, 32.0],
-            [0.0, 0.0, 1.0],
-        ])
+        intrinsics = torch.tensor(
+            [
+                [50.0, 0.0, 32.0],
+                [0.0, 50.0, 32.0],
+                [0.0, 0.0, 1.0],
+            ]
+        )
         points, _ = depth_to_point_cloud(depth, intrinsics)
         assert points.shape == (64 * 64, 3)
 

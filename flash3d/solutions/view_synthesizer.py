@@ -70,8 +70,10 @@ class ViewSynthesizer:
     @torch.no_grad()
     def render_view(self, camera_dict: dict[str, Any]) -> dict[str, torch.Tensor]:
         """Render a single view."""
-        camera_dict = {k: v.to(self.device) if isinstance(v, torch.Tensor) else v
-                      for k, v in camera_dict.items()}
+        camera_dict = {
+            k: v.to(self.device) if isinstance(v, torch.Tensor) else v
+            for k, v in camera_dict.items()
+        }
         return self.model.render(camera_dict)
 
     @torch.no_grad()
@@ -108,9 +110,14 @@ class ViewSynthesizer:
         frames = []
         for view_mat in view_matrices:
             cam = Camera(
-                fx=fx, fy=fy, cx=width / 2, cy=height / 2,
-                width=width, height=height,
-                R=view_mat[:3, :3], t=view_mat[:3, 3],
+                fx=fx,
+                fy=fy,
+                cx=width / 2,
+                cy=height / 2,
+                width=width,
+                height=height,
+                R=view_mat[:3, :3],
+                t=view_mat[:3, 3],
             )
             result = self.render_view(cam.to_dict())
 

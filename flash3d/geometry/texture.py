@@ -35,7 +35,8 @@ class UVMapper:
 
     @staticmethod
     def cylindrical_projection(
-        vertices: np.ndarray, axis: int = 1,
+        vertices: np.ndarray,
+        axis: int = 1,
     ) -> np.ndarray:
         """Project vertices using cylindrical mapping around a given axis.
 
@@ -60,7 +61,8 @@ class UVMapper:
 
     @staticmethod
     def planar_projection(
-        vertices: np.ndarray, plane: str = "xy",
+        vertices: np.ndarray,
+        plane: str = "xy",
     ) -> np.ndarray:
         """Project vertices onto a plane.
 
@@ -84,7 +86,8 @@ class UVMapper:
 
     @staticmethod
     def box_projection(
-        vertices: np.ndarray, normals: np.ndarray,
+        vertices: np.ndarray,
+        normals: np.ndarray,
     ) -> np.ndarray:
         """Box/cube projection: choose projection plane per vertex based on normal.
 
@@ -153,7 +156,7 @@ class TextureAtlas:
             raise RuntimeError("Atlas is full, increase atlas_size")
 
         ox, oy = self._next_col, self._next_row
-        self.atlas[oy:oy+h, ox:ox+w] = chart_image
+        self.atlas[oy : oy + h, ox : ox + w] = chart_image
         self._next_col += w + padding
         self._row_height = max(self._row_height, h)
 
@@ -164,6 +167,7 @@ class TextureAtlas:
 
     def save(self, path: str) -> None:
         from PIL import Image
+
         img = Image.fromarray(self.atlas)
         img.save(path)
 
@@ -248,7 +252,10 @@ class MeshTexturer:
 
             if best_view >= 0:
                 self._sample_face_texture(
-                    atlas, uvs, face, face_verts,
+                    atlas,
+                    uvs,
+                    face,
+                    face_verts,
                     images[best_view],
                     intrinsics_list[best_view],
                     extrinsics_list[best_view],
@@ -304,7 +311,8 @@ class MeshTexturer:
 
     @staticmethod
     def _compute_barycentric(
-        point: np.ndarray, triangle: np.ndarray,
+        point: np.ndarray,
+        triangle: np.ndarray,
     ) -> np.ndarray | None:
         """Compute barycentric coordinates of point in triangle (2D)."""
         v0 = triangle[1] - triangle[0]
@@ -367,7 +375,7 @@ def save_textured_mesh_obj(
 
         for face in faces:
             f.write(
-                f"f {face[0]+1}/{face[0]+1} "
-                f"{face[1]+1}/{face[1]+1} "
-                f"{face[2]+1}/{face[2]+1}\n"
+                f"f {face[0] + 1}/{face[0] + 1} "
+                f"{face[1] + 1}/{face[1] + 1} "
+                f"{face[2] + 1}/{face[2] + 1}\n"
             )

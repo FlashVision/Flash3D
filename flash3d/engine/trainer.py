@@ -50,8 +50,16 @@ class Trainer:
             param_groups = [
                 {"params": [self.model.backbone.means], "lr": cfg.lr_position, "name": "means"},
                 {"params": [self.model.backbone.scales], "lr": cfg.lr_scaling, "name": "scales"},
-                {"params": [self.model.backbone.rotations], "lr": cfg.lr_rotation, "name": "rotations"},
-                {"params": [self.model.backbone.opacities], "lr": cfg.lr_opacity, "name": "opacities"},
+                {
+                    "params": [self.model.backbone.rotations],
+                    "lr": cfg.lr_rotation,
+                    "name": "rotations",
+                },
+                {
+                    "params": [self.model.backbone.opacities],
+                    "lr": cfg.lr_opacity,
+                    "name": "opacities",
+                },
                 {"params": [self.model.backbone.sh_coeffs], "lr": cfg.lr_sh, "name": "sh_coeffs"},
             ]
             return torch.optim.Adam(param_groups, eps=1e-15)
@@ -60,9 +68,7 @@ class Trainer:
 
     def _build_scheduler(self) -> torch.optim.lr_scheduler._LRScheduler | None:
         """Build learning rate scheduler with exponential decay."""
-        return torch.optim.lr_scheduler.ExponentialLR(
-            self.optimizer, gamma=0.9999
-        )
+        return torch.optim.lr_scheduler.ExponentialLR(self.optimizer, gamma=0.9999)
 
     def train(
         self,
@@ -87,8 +93,10 @@ class Trainer:
 
             if dataloader is not None:
                 batch = next(iter(dataloader))
-                batch = {k: v.to(self.device) if isinstance(v, torch.Tensor) else v
-                        for k, v in batch.items()}
+                batch = {
+                    k: v.to(self.device) if isinstance(v, torch.Tensor) else v
+                    for k, v in batch.items()
+                }
             else:
                 batch = self._generate_synthetic_batch()
 
@@ -102,9 +110,11 @@ class Trainer:
             pbar.set_postfix(loss=f"{loss:.6f}")
 
             # Densification for 3DGS
-            if (self.config.model.name == "gaussian_splatting"
+            if (
+                self.config.model.name == "gaussian_splatting"
                 and self.config.train.densify_from <= iteration <= self.config.train.densify_until
-                and iteration % self.config.train.densify_interval == 0):
+                and iteration % self.config.train.densify_interval == 0
+            ):
                 self._densify()
 
             # Save checkpoint
@@ -179,22 +189,41 @@ class Trainer:
             pred = pred.unsqueeze(0)
             target = target.unsqueeze(0)
 
-        C1, C2 = 0.01 ** 2, 0.03 ** 2
+        C1, C2 = 0.01**2, 0.03**2
         channels = pred.shape[1]
 
         kernel = torch.ones(channels, 1, window_size, window_size, device=pred.device)
         kernel = kernel / (window_size * window_size)
 
-        mu_pred = torch.nn.functional.conv2d(pred, kernel, groups=channels, padding=window_size // 2)
-        mu_target = torch.nn.functional.conv2d(target, kernel, groups=channels, padding=window_size // 2)
+        mu_pred = torch.nn.functional.conv2d(
+            pred, kernel, groups=channels, padding=window_size // 2
+        )
+        mu_target = torch.nn.functional.conv2d(
+            target, kernel, groups=channels, padding=window_size // 2
+        )
 
-        mu_pred_sq = mu_pred ** 2
-        mu_target_sq = mu_target ** 2
+        mu_pred_sq = mu_pred**2
+        mu_target_sq = mu_target**2
         mu_cross = mu_pred * mu_target
 
-        sigma_pred = torch.nn.functional.conv2d(pred * pred, kernel, groups=channels, padding=window_size // 2) - mu_pred_sq
-        sigma_target = torch.nn.functional.conv2d(target * target, kernel, groups=channels, padding=window_size // 2) - mu_target_sq
-        sigma_cross = torch.nn.functional.conv2d(pred * target, kernel, groups=channels, padding=window_size // 2) - mu_cross
+        sigma_pred = (
+            torch.nn.functional.conv2d(
+                pred * pred, kernel, groups=channels, padding=window_size // 2
+            )
+            - mu_pred_sq
+        )
+        sigma_target = (
+            torch.nn.functional.conv2d(
+                target * target, kernel, groups=channels, padding=window_size // 2
+            )
+            - mu_target_sq
+        )
+        sigma_cross = (
+            torch.nn.functional.conv2d(
+                pred * target, kernel, groups=channels, padding=window_size // 2
+            )
+            - mu_cross
+        )
 
         ssim_map = ((2 * mu_cross + C1) * (2 * sigma_cross + C2)) / (
             (mu_pred_sq + mu_target_sq + C1) * (sigma_pred + sigma_target + C2)

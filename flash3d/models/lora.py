@@ -74,8 +74,12 @@ class LoRAConv2d(nn.Module):
         self.scaling = alpha / rank
 
         self.conv = nn.Conv2d(
-            in_channels, out_channels, kernel_size,
-            stride=stride, padding=padding, bias=False,
+            in_channels,
+            out_channels,
+            kernel_size,
+            stride=stride,
+            padding=padding,
+            bias=False,
         )
         self.conv.weight.requires_grad = False
 

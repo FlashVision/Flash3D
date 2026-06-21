@@ -41,13 +41,15 @@ class MultiResolutionHashEncoding(nn.Module):
         self.num_levels = num_levels
         self.features_per_level = features_per_level
         self.log2_hashmap_size = log2_hashmap_size
-        self.hashmap_size = 2 ** log2_hashmap_size
+        self.hashmap_size = 2**log2_hashmap_size
 
         self.register_buffer(
-            "bbox_min", torch.tensor(bbox_min, dtype=torch.float32),
+            "bbox_min",
+            torch.tensor(bbox_min, dtype=torch.float32),
         )
         self.register_buffer(
-            "bbox_max", torch.tensor(bbox_max, dtype=torch.float32),
+            "bbox_max",
+            torch.tensor(bbox_max, dtype=torch.float32),
         )
 
         if num_levels > 1:
@@ -57,13 +59,17 @@ class MultiResolutionHashEncoding(nn.Module):
         else:
             growth = 1.0
 
-        resolutions = [int(base_resolution * growth ** i) for i in range(num_levels)]
+        resolutions = [int(base_resolution * growth**i) for i in range(num_levels)]
         self.register_buffer("resolutions", torch.tensor(resolutions, dtype=torch.long))
 
-        self.hash_tables = nn.ParameterList([
-            nn.Parameter(torch.zeros(self.hashmap_size, features_per_level).uniform_(-1e-4, 1e-4))
-            for _ in range(num_levels)
-        ])
+        self.hash_tables = nn.ParameterList(
+            [
+                nn.Parameter(
+                    torch.zeros(self.hashmap_size, features_per_level).uniform_(-1e-4, 1e-4)
+                )
+                for _ in range(num_levels)
+            ]
+        )
 
         self.register_buffer(
             "_primes",
@@ -119,9 +125,18 @@ class MultiResolutionHashEncoding(nn.Module):
         frac = scaled - floor_coords.float()
 
         offsets = torch.tensor(
-            [[0, 0, 0], [1, 0, 0], [0, 1, 0], [0, 0, 1],
-             [1, 1, 0], [1, 0, 1], [0, 1, 1], [1, 1, 1]],
-            device=x.device, dtype=torch.long,
+            [
+                [0, 0, 0],
+                [1, 0, 0],
+                [0, 1, 0],
+                [0, 0, 1],
+                [1, 1, 0],
+                [1, 0, 1],
+                [0, 1, 1],
+                [1, 1, 1],
+            ],
+            device=x.device,
+            dtype=torch.long,
         )
 
         corners = floor_coords.unsqueeze(1) + offsets.unsqueeze(0)
@@ -209,7 +224,9 @@ class InstantNGPHashEncoding(nn.Module):
         return self.hash_encoding.output_dim
 
     def forward(
-        self, positions: torch.Tensor, directions: torch.Tensor | None = None,
+        self,
+        positions: torch.Tensor,
+        directions: torch.Tensor | None = None,
     ) -> dict[str, torch.Tensor]:
         """Query density and color at given positions.
 
@@ -237,7 +254,9 @@ class InstantNGPHashEncoding(nn.Module):
 
     def _encode_directions(self, dirs: torch.Tensor) -> torch.Tensor:
         freqs = 2.0 ** torch.arange(
-            self.num_dir_frequencies, device=dirs.device, dtype=dirs.dtype,
+            self.num_dir_frequencies,
+            device=dirs.device,
+            dtype=dirs.dtype,
         )
         encoded = [dirs]
         for f in freqs:

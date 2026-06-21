@@ -40,7 +40,9 @@ class IntegratedPositionalEncoding(nn.Module):
         return d * 3
 
     def forward(
-        self, means: torch.Tensor, covs: torch.Tensor,
+        self,
+        means: torch.Tensor,
+        covs: torch.Tensor,
     ) -> torch.Tensor:
         """Compute integrated positional encoding.
 
@@ -57,7 +59,7 @@ class IntegratedPositionalEncoding(nn.Module):
 
         for freq in self.freqs:
             scaled_mean = freq * means
-            scaled_var = (freq ** 2) * covs
+            scaled_var = (freq**2) * covs
             weight = torch.exp(-0.5 * scaled_var)
             encoded.append(weight * torch.sin(scaled_mean))
             encoded.append(weight * torch.cos(scaled_mean))
@@ -98,7 +100,9 @@ class SceneContraction(nn.Module):
         return contracted
 
     def contract_covariance(
-        self, x: torch.Tensor, cov_diag: torch.Tensor,
+        self,
+        x: torch.Tensor,
+        cov_diag: torch.Tensor,
     ) -> torch.Tensor:
         """Contract covariance under the scene contraction mapping.
 
@@ -111,7 +115,7 @@ class SceneContraction(nn.Module):
         outer = ~mask
         if outer.any():
             n = norm[outer]
-            scale = (1.0 / (n ** 2)) ** 2
+            scale = (1.0 / (n**2)) ** 2
             contracted_cov[outer] = cov_diag[outer] * scale
 
         return contracted_cov
@@ -168,7 +172,9 @@ class MipNeRFMLP(nn.Module):
         )
 
     def forward(
-        self, pos_enc: torch.Tensor, dir_enc: torch.Tensor,
+        self,
+        pos_enc: torch.Tensor,
+        dir_enc: torch.Tensor,
     ) -> tuple[torch.Tensor, torch.Tensor]:
         h = pos_enc
         for i, layer in enumerate(self.layers):
@@ -220,20 +226,25 @@ class MipNeRF360(nn.Module):
         ipe_dim = self.ipe.output_dim
 
         from flash3d.models.architectures.nerf import PositionalEncoding
+
         self.dir_encoder = PositionalEncoding(num_dir_frequencies)
         dir_dim = 3 * self.dir_encoder.output_dim
 
         self.mlp = MipNeRFMLP(
-            input_dim=ipe_dim, dir_dim=dir_dim,
-            hidden_dim=hidden_dim, num_layers=num_layers,
+            input_dim=ipe_dim,
+            dir_dim=dir_dim,
+            hidden_dim=hidden_dim,
+            num_layers=num_layers,
         )
 
         self.contraction = SceneContraction() if use_contraction else None
 
-        self.proposal_nets = nn.ModuleList([
-            ProposalNetwork(input_dim=ipe_dim, hidden_dim=64, num_layers=2)
-            for _ in range(num_proposal_rounds)
-        ])
+        self.proposal_nets = nn.ModuleList(
+            [
+                ProposalNetwork(input_dim=ipe_dim, hidden_dim=64, num_layers=2)
+                for _ in range(num_proposal_rounds)
+            ]
+        )
 
     def forward(
         self,
@@ -259,12 +270,16 @@ class MipNeRF360(nn.Module):
 
         if rays_o is None:
             from flash3d.rendering.cameras import generate_rays
+
             width = camera.get("image_width", 800)
             height = camera.get("image_height", 800)
             if isinstance(width, torch.Tensor):
                 width, height = width.item(), height.item()
             rays_o, rays_d = generate_rays(
-                camera["intrinsics"], camera["extrinsics"], int(width), int(height),
+                camera["intrinsics"],
+                camera["extrinsics"],
+                int(width),
+                int(height),
             )
 
         t_vals = self._sample_along_rays(rays_o, rays_d)
@@ -281,7 +296,9 @@ class MipNeRF360(nn.Module):
         pos_enc = self.ipe(contracted_means, contracted_covs)
         dirs = F.normalize(rays_d, dim=-1)
         dirs_expanded = dirs.unsqueeze(-2).expand_as(means)
-        dir_enc = self.dir_encoder(dirs_expanded.reshape(-1, 3)).reshape(*dirs_expanded.shape[:-1], -1)
+        dir_enc = self.dir_encoder(dirs_expanded.reshape(-1, 3)).reshape(
+            *dirs_expanded.shape[:-1], -1
+        )
 
         density, rgb = self.mlp(pos_enc, dir_enc)
         density = density.reshape(*t_vals.shape[:-1], t_vals.shape[-1] - 1)
@@ -295,12 +312,17 @@ class MipNeRF360(nn.Module):
         return result
 
     def _sample_along_rays(
-        self, rays_o: torch.Tensor, rays_d: torch.Tensor,
+        self,
+        rays_o: torch.Tensor,
+        rays_d: torch.Tensor,
     ) -> torch.Tensor:
         """Generate sample points along rays."""
         n_samples = self.num_coarse_samples + self.num_fine_samples
         t_vals = torch.linspace(
-            self.near, self.far, n_samples + 1, device=rays_o.device,
+            self.near,
+            self.far,
+            n_samples + 1,
+            device=rays_o.device,
         )
         return t_vals.unsqueeze(0).expand(rays_o.shape[0], -1)
 
@@ -322,7 +344,9 @@ class MipNeRF360(nn.Module):
         return means, covs
 
     def _distortion_loss(
-        self, weights: torch.Tensor, t_vals: torch.Tensor,
+        self,
+        weights: torch.Tensor,
+        t_vals: torch.Tensor,
     ) -> torch.Tensor:
         """Distortion regularization loss (Mip-NeRF 360)."""
         t_mid = 0.5 * (t_vals[..., :-1] + t_vals[..., 1:])
@@ -332,7 +356,7 @@ class MipNeRF360(nn.Module):
         (w * t_mid).sum(dim=-1, keepdim=True)
         dist = torch.abs(t_mid.unsqueeze(-1) - t_mid.unsqueeze(-2))
         loss = (w.unsqueeze(-1) * w.unsqueeze(-2) * dist).sum(dim=(-1, -2))
-        loss = loss + (1.0 / 3.0) * (w ** 2 * t_delta).sum(dim=-1)
+        loss = loss + (1.0 / 3.0) * (w**2 * t_delta).sum(dim=-1)
         return loss.mean()
 
     @property

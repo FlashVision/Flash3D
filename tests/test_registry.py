@@ -45,6 +45,7 @@ class TestRegistry:
             pass
 
         with pytest.raises(KeyError):
+
             @reg.register("dup")
             class B:
                 pass

@@ -49,16 +49,19 @@ def extract_mesh_marching_cubes(
 
     try:
         from skimage.measure import marching_cubes
+
         vertices, faces, _, _ = marching_cubes(density_grid, level=threshold)
     except ImportError:
         vertices, faces = _simple_marching_cubes(density_grid, threshold)
 
     # Scale vertices back to world coordinates
-    scale = np.array([
-        (bounds_max[0] - bounds_min[0]) / resolution,
-        (bounds_max[1] - bounds_min[1]) / resolution,
-        (bounds_max[2] - bounds_min[2]) / resolution,
-    ])
+    scale = np.array(
+        [
+            (bounds_max[0] - bounds_min[0]) / resolution,
+            (bounds_max[1] - bounds_min[1]) / resolution,
+            (bounds_max[2] - bounds_min[2]) / resolution,
+        ]
+    )
     offset = np.array(bounds_min)
     vertices = vertices * scale + offset
 
@@ -76,7 +79,7 @@ def _simple_marching_cubes(
     for i in range(res - 1):
         for j in range(res - 1):
             for k in range(res - 1):
-                cube = grid[i:i+2, j:j+2, k:k+2]
+                cube = grid[i : i + 2, j : j + 2, k : k + 2]
                 above = cube > threshold
                 if above.all() or not above.any():
                     continue
@@ -113,7 +116,7 @@ def save_mesh_obj(
                 f.write(f"v {v[0]:.6f} {v[1]:.6f} {v[2]:.6f}\n")
 
         for face in faces:
-            f.write(f"f {face[0]+1} {face[1]+1} {face[2]+1}\n")
+            f.write(f"f {face[0] + 1} {face[1] + 1} {face[2] + 1}\n")
 
 
 def save_mesh_ply(
@@ -124,6 +127,7 @@ def save_mesh_ply(
     """Save mesh to PLY format using trimesh."""
     try:
         import trimesh
+
         mesh = trimesh.Trimesh(vertices=vertices, faces=faces)
         mesh.export(path)
     except ImportError:

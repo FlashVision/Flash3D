@@ -28,8 +28,12 @@ def main():
 
     # Render a test view
     camera = Camera(
-        fx=800.0, fy=800.0, cx=400.0, cy=400.0,
-        width=800, height=800,
+        fx=800.0,
+        fy=800.0,
+        cx=400.0,
+        cy=400.0,
+        width=800,
+        height=800,
         R=torch.eye(3),
         t=torch.tensor([0.0, 0.0, -3.0]),
     )

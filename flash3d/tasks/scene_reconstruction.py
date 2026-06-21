@@ -50,11 +50,14 @@ class SceneReconstructionTask:
         metrics = trainer.train(**kwargs)
 
         from flash3d.engine.exporter import Exporter
+
         exporter = Exporter(model=model)
         ply_path = exporter.export(format="ply", output_path=output_path / "model.ply")
 
         return {
             "model_path": str(ply_path),
             "metrics": metrics,
-            "num_gaussians": model.backbone.num_points if hasattr(model.backbone, "num_points") else 0,
+            "num_gaussians": model.backbone.num_points
+            if hasattr(model.backbone, "num_points")
+            else 0,
         }

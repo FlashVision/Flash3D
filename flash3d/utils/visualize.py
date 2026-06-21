@@ -97,6 +97,7 @@ def visualize_point_cloud(
 
     if output_path is not None:
         from PIL import Image
+
         Path(output_path).parent.mkdir(parents=True, exist_ok=True)
         Image.fromarray(result).save(output_path)
         return None
@@ -129,6 +130,7 @@ def create_video_from_frames(
 
     if isinstance(frames[0], (str, Path)):
         from PIL import Image
+
         frames = [np.array(Image.open(f)) for f in frames]
 
     H, W = frames[0].shape[:2]
@@ -146,8 +148,9 @@ def create_video_from_frames(
 def _turbo_colormap(values: np.ndarray) -> np.ndarray:
     """Approximate turbo colormap."""
     r = np.clip(np.where(values < 0.5, 2 * values, 2 - 2 * values), 0, 1)
-    g = np.clip(np.where(values < 0.33, 3 * values,
-                np.where(values < 0.66, 1.0, 3 - 3 * values)), 0, 1)
+    g = np.clip(
+        np.where(values < 0.33, 3 * values, np.where(values < 0.66, 1.0, 3 - 3 * values)), 0, 1
+    )
     b = np.clip(np.where(values < 0.5, 1 - 2 * values, 0), 0, 1)
 
     if values.ndim == 1:

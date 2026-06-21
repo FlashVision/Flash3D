@@ -86,7 +86,9 @@ class DeformationNetwork(nn.Module):
         layers = [nn.Linear(input_dim, hidden_dim), nn.ReLU(inplace=True)]
         for i in range(num_layers - 1):
             if i == num_layers // 2:
-                layers.extend([nn.Linear(hidden_dim + input_dim, hidden_dim), nn.ReLU(inplace=True)])
+                layers.extend(
+                    [nn.Linear(hidden_dim + input_dim, hidden_dim), nn.ReLU(inplace=True)]
+                )
             else:
                 layers.extend([nn.Linear(hidden_dim, hidden_dim), nn.ReLU(inplace=True)])
 
@@ -106,7 +108,9 @@ class DeformationNetwork(nn.Module):
         nn.init.zeros_(self.scale_head.bias)
 
     def forward(
-        self, positions: torch.Tensor, time: torch.Tensor,
+        self,
+        positions: torch.Tensor,
+        time: torch.Tensor,
     ) -> dict[str, torch.Tensor]:
         """Predict deformation offsets.
 
@@ -166,8 +170,10 @@ class GaussianSplatting4D(nn.Module):
         super().__init__()
         self.config = config
         self.canonical = GaussianSplatting(
-            config=config, num_gaussians=num_gaussians,
-            sh_degree=sh_degree, **kwargs,
+            config=config,
+            num_gaussians=num_gaussians,
+            sh_degree=sh_degree,
+            **kwargs,
         )
 
         self.deformation = DeformationNetwork(
@@ -183,7 +189,8 @@ class GaussianSplatting4D(nn.Module):
         return self.canonical.num_points
 
     def deform_gaussians(
-        self, time: float | torch.Tensor,
+        self,
+        time: float | torch.Tensor,
     ) -> dict[str, torch.Tensor]:
         """Apply temporal deformation to canonical Gaussians.
 
@@ -202,9 +209,15 @@ class GaussianSplatting4D(nn.Module):
         deformed_means = self.canonical.means + deform["delta_pos"]
 
         canonical_rot = F.normalize(self.canonical.rotations, dim=-1)
-        delta_rot = F.normalize(deform["delta_rot"] + torch.tensor(
-            [1, 0, 0, 0], device=canonical_rot.device, dtype=canonical_rot.dtype,
-        ), dim=-1)
+        delta_rot = F.normalize(
+            deform["delta_rot"]
+            + torch.tensor(
+                [1, 0, 0, 0],
+                device=canonical_rot.device,
+                dtype=canonical_rot.dtype,
+            ),
+            dim=-1,
+        )
         deformed_rotations = self._quaternion_multiply(canonical_rot, delta_rot)
 
         deformed_scales = self.canonical.scales + deform["delta_scale"]
@@ -222,12 +235,15 @@ class GaussianSplatting4D(nn.Module):
         """Multiply two quaternions (w, x, y, z)."""
         w1, x1, y1, z1 = q1[..., 0], q1[..., 1], q1[..., 2], q1[..., 3]
         w2, x2, y2, z2 = q2[..., 0], q2[..., 1], q2[..., 2], q2[..., 3]
-        return torch.stack([
-            w1*w2 - x1*x2 - y1*y2 - z1*z2,
-            w1*x2 + x1*w2 + y1*z2 - z1*y2,
-            w1*y2 - x1*z2 + y1*w2 + z1*x2,
-            w1*z2 + x1*y2 - y1*x2 + z1*w2,
-        ], dim=-1)
+        return torch.stack(
+            [
+                w1 * w2 - x1 * x2 - y1 * y2 - z1 * z2,
+                w1 * x2 + x1 * w2 + y1 * z2 - z1 * y2,
+                w1 * y2 - x1 * z2 + y1 * w2 + z1 * x2,
+                w1 * z2 + x1 * y2 - y1 * x2 + z1 * w2,
+            ],
+            dim=-1,
+        )
 
     def forward(
         self,
@@ -272,7 +288,8 @@ class GaussianSplatting4D(nn.Module):
             width, height = width.item(), height.item()
 
         camera_center = camera.get(
-            "camera_center", torch.zeros(3, device=self.canonical.means.device),
+            "camera_center",
+            torch.zeros(3, device=self.canonical.means.device),
         )
 
         result = rasterize_gaussians(
@@ -292,7 +309,9 @@ class GaussianSplatting4D(nn.Module):
         return result
 
     def temporal_smoothness_loss(
-        self, time: float, dt: float = 0.01,
+        self,
+        time: float,
+        dt: float = 0.01,
     ) -> torch.Tensor:
         """Compute temporal smoothness regularization loss.
 

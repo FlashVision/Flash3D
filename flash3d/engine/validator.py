@@ -40,8 +40,9 @@ class Validator:
         count = 0
 
         for batch in tqdm(dataloader, desc="Validating"):
-            batch = {k: v.to(self.device) if isinstance(v, torch.Tensor) else v
-                    for k, v in batch.items()}
+            batch = {
+                k: v.to(self.device) if isinstance(v, torch.Tensor) else v for k, v in batch.items()
+            }
 
             if "viewmatrix" in batch:
                 output = self.model(cameras=batch)
