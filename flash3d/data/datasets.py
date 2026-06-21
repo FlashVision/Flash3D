@@ -3,7 +3,7 @@
 from __future__ import annotations
 
 from pathlib import Path
-from typing import Any, Dict, List, Optional, Tuple
+from typing import Any
 
 import numpy as np
 import torch
@@ -31,8 +31,8 @@ class COLMAPDataset(Dataset):
         self,
         root_dir: str | Path,
         split: str = "train",
-        image_size: Tuple[int, int] = (800, 800),
-        transforms: Optional[Compose] = None,
+        image_size: tuple[int, int] = (800, 800),
+        transforms: Compose | None = None,
         white_background: bool = False,
     ) -> None:
         self.root_dir = Path(root_dir)
@@ -68,7 +68,7 @@ class COLMAPDataset(Dataset):
     def __len__(self) -> int:
         return len(self.image_paths)
 
-    def __getitem__(self, idx: int) -> Dict[str, Any]:
+    def __getitem__(self, idx: int) -> dict[str, Any]:
         from PIL import Image
 
         img_path = self.image_paths[idx]
@@ -137,9 +137,9 @@ class ScanNetDataset(Dataset):
         root_dir: str | Path,
         scene_id: str = "scene0000_00",
         split: str = "train",
-        image_size: Tuple[int, int] = (640, 480),
+        image_size: tuple[int, int] = (640, 480),
         frame_skip: int = 10,
-        transforms: Optional[Compose] = None,
+        transforms: Compose | None = None,
     ) -> None:
         self.root_dir = Path(root_dir)
         self.scene_dir = self.root_dir / scene_id
@@ -153,7 +153,7 @@ class ScanNetDataset(Dataset):
     def _load_frames(self) -> None:
         color_dir = self.scene_dir / "color"
         if not color_dir.exists():
-            self.frames: List[Dict[str, Any]] = []
+            self.frames: list[dict[str, Any]] = []
             return
 
         frame_files = sorted(color_dir.glob("*.jpg"))
@@ -178,7 +178,7 @@ class ScanNetDataset(Dataset):
     def __len__(self) -> int:
         return len(self.frames)
 
-    def __getitem__(self, idx: int) -> Dict[str, Any]:
+    def __getitem__(self, idx: int) -> dict[str, Any]:
         from PIL import Image
 
         frame = self.frames[idx]
@@ -189,7 +189,7 @@ class ScanNetDataset(Dataset):
             np.array(color, dtype=np.float32) / 255.0
         ).permute(2, 0, 1)
 
-        sample: Dict[str, Any] = {"image": color_tensor, "idx": idx}
+        sample: dict[str, Any] = {"image": color_tensor, "idx": idx}
 
         if frame["depth"].exists():
             depth = Image.open(frame["depth"])
@@ -218,9 +218,9 @@ class RealEstate10KDataset(Dataset):
         self,
         root_dir: str | Path,
         split: str = "train",
-        image_size: Tuple[int, int] = (256, 256),
+        image_size: tuple[int, int] = (256, 256),
         num_context_views: int = 2,
-        transforms: Optional[Compose] = None,
+        transforms: Compose | None = None,
     ) -> None:
         self.root_dir = Path(root_dir)
         self.split = split
@@ -232,7 +232,7 @@ class RealEstate10KDataset(Dataset):
 
     def _load_sequences(self) -> None:
         split_file = self.root_dir / f"{self.split}.txt"
-        self.sequences: List[Dict[str, Any]] = []
+        self.sequences: list[dict[str, Any]] = []
 
         if split_file.exists():
             with open(split_file) as f:
@@ -251,7 +251,7 @@ class RealEstate10KDataset(Dataset):
     def __len__(self) -> int:
         return len(self.sequences)
 
-    def __getitem__(self, idx: int) -> Dict[str, Any]:
+    def __getitem__(self, idx: int) -> dict[str, Any]:
         from PIL import Image
 
         seq = self.sequences[idx]
@@ -290,9 +290,9 @@ class DL3DVDataset(Dataset):
         self,
         root_dir: str | Path,
         split: str = "train",
-        image_size: Tuple[int, int] = (512, 512),
+        image_size: tuple[int, int] = (512, 512),
         max_views_per_scene: int = 50,
-        transforms: Optional[Compose] = None,
+        transforms: Compose | None = None,
     ) -> None:
         self.root_dir = Path(root_dir)
         self.split = split
@@ -304,7 +304,7 @@ class DL3DVDataset(Dataset):
 
     def _load_scenes(self) -> None:
         split_dir = self.root_dir / self.split
-        self.scenes: List[Path] = []
+        self.scenes: list[Path] = []
 
         if split_dir.exists():
             self.scenes = sorted([d for d in split_dir.iterdir() if d.is_dir()])
@@ -312,7 +312,7 @@ class DL3DVDataset(Dataset):
     def __len__(self) -> int:
         return len(self.scenes)
 
-    def __getitem__(self, idx: int) -> Dict[str, Any]:
+    def __getitem__(self, idx: int) -> dict[str, Any]:
         from PIL import Image
 
         scene_dir = self.scenes[idx] if self.scenes else self.root_dir
@@ -328,7 +328,7 @@ class DL3DVDataset(Dataset):
                 torch.from_numpy(np.array(img, dtype=np.float32) / 255.0).permute(2, 0, 1)
             )
 
-        sample: Dict[str, Any] = {"idx": idx, "scene_path": str(scene_dir)}
+        sample: dict[str, Any] = {"idx": idx, "scene_path": str(scene_dir)}
         if images:
             sample["images"] = torch.stack(images)
 

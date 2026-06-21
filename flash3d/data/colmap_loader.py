@@ -8,7 +8,7 @@ for dataset creation.
 from __future__ import annotations
 
 from pathlib import Path
-from typing import Any, Dict, List, Optional, Tuple
+from typing import Any
 
 import numpy as np
 import torch
@@ -109,7 +109,7 @@ class COLMAPScene:
     def __init__(
         self,
         root_dir: str,
-        images_dir: Optional[str] = None,
+        images_dir: str | None = None,
         sparse_dir: str = "sparse/0",
         load_points: bool = True,
     ):
@@ -117,9 +117,9 @@ class COLMAPScene:
         self.images_dir = Path(images_dir) if images_dir else self.root_dir / "images"
         self.sparse_dir = self.root_dir / sparse_dir
 
-        self.cameras: Dict[int, Dict[str, Any]] = {}
-        self.images: Dict[int, Dict[str, Any]] = {}
-        self.points3d: Dict[int, Dict[str, Any]] = {}
+        self.cameras: dict[int, dict[str, Any]] = {}
+        self.images: dict[int, dict[str, Any]] = {}
+        self.points3d: dict[int, dict[str, Any]] = {}
 
         self._load(load_points)
 
@@ -128,7 +128,7 @@ class COLMAPScene:
         cameras_bin = self.sparse_dir / "cameras.bin"
         cameras_txt = self.sparse_dir / "cameras.txt"
         images_bin = self.sparse_dir / "images.bin"
-        images_txt = self.sparse_dir / "images.txt"
+        self.sparse_dir / "images.txt"
         points_bin = self.sparse_dir / "points3D.bin"
 
         if cameras_bin.exists():
@@ -154,7 +154,7 @@ class COLMAPScene:
     def num_points(self) -> int:
         return len(self.points3d)
 
-    def get_image_names(self) -> List[str]:
+    def get_image_names(self) -> list[str]:
         """Get sorted list of image filenames."""
         return sorted(img["name"] for img in self.images.values())
 
@@ -185,7 +185,7 @@ class COLMAPScene:
         c2w[:3, 3] = -ext[:3, :3].T @ ext[:3, 3]
         return c2w
 
-    def get_point_cloud(self) -> Tuple[np.ndarray, np.ndarray]:
+    def get_point_cloud(self) -> tuple[np.ndarray, np.ndarray]:
         """Get point cloud as (N, 3) positions and (N, 3) RGB colors in [0, 1]."""
         if not self.points3d:
             return np.zeros((0, 3)), np.zeros((0, 3))
@@ -196,7 +196,7 @@ class COLMAPScene:
 
     def get_point_cloud_torch(
         self, device: str = "cpu",
-    ) -> Tuple[torch.Tensor, torch.Tensor]:
+    ) -> tuple[torch.Tensor, torch.Tensor]:
         """Get point cloud as PyTorch tensors."""
         pts, cols = self.get_point_cloud()
         return (
@@ -206,7 +206,7 @@ class COLMAPScene:
 
     def get_all_cameras_torch(
         self, device: str = "cpu",
-    ) -> List[Dict[str, torch.Tensor]]:
+    ) -> list[dict[str, torch.Tensor]]:
         """Get all camera parameters as PyTorch tensors.
 
         Returns list of dicts suitable for Gaussian splatting or NeRF rendering.
@@ -241,7 +241,7 @@ class COLMAPScene:
 
     def split_train_test(
         self, test_ratio: float = 0.1,
-    ) -> Tuple[List[int], List[int]]:
+    ) -> tuple[list[int], list[int]]:
         """Split image IDs into train and test sets."""
         image_ids = sorted(self.images.keys())
         n_test = max(1, int(len(image_ids) * test_ratio))
@@ -249,14 +249,14 @@ class COLMAPScene:
         train_ids = [i for i in image_ids if i not in test_ids]
         return train_ids, test_ids
 
-    def compute_scene_bounds(self) -> Tuple[np.ndarray, np.ndarray]:
+    def compute_scene_bounds(self) -> tuple[np.ndarray, np.ndarray]:
         """Compute axis-aligned bounding box of the scene from 3D points."""
         pts, _ = self.get_point_cloud()
         if pts.shape[0] == 0:
             return np.array([-1, -1, -1.0]), np.array([1, 1, 1.0])
         return pts.min(axis=0), pts.max(axis=0)
 
-    def compute_scene_center_and_radius(self) -> Tuple[np.ndarray, float]:
+    def compute_scene_center_and_radius(self) -> tuple[np.ndarray, float]:
         """Compute scene center and radius for normalization."""
         pts, _ = self.get_point_cloud()
         if pts.shape[0] == 0:

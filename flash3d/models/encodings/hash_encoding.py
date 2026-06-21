@@ -8,7 +8,6 @@ and feature dimensions.
 from __future__ import annotations
 
 import math
-from typing import Optional, Tuple
 
 import torch
 import torch.nn as nn
@@ -35,8 +34,8 @@ class MultiResolutionHashEncoding(nn.Module):
         log2_hashmap_size: int = 19,
         base_resolution: int = 16,
         max_resolution: int = 2048,
-        bbox_min: Tuple[float, float, float] = (0.0, 0.0, 0.0),
-        bbox_max: Tuple[float, float, float] = (1.0, 1.0, 1.0),
+        bbox_min: tuple[float, float, float] = (0.0, 0.0, 0.0),
+        bbox_max: tuple[float, float, float] = (1.0, 1.0, 1.0),
     ) -> None:
         super().__init__()
         self.num_levels = num_levels
@@ -210,7 +209,7 @@ class InstantNGPHashEncoding(nn.Module):
         return self.hash_encoding.output_dim
 
     def forward(
-        self, positions: torch.Tensor, directions: Optional[torch.Tensor] = None,
+        self, positions: torch.Tensor, directions: torch.Tensor | None = None,
     ) -> dict[str, torch.Tensor]:
         """Query density and color at given positions.
 

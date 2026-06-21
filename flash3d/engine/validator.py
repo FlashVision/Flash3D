@@ -2,8 +2,6 @@
 
 from __future__ import annotations
 
-from typing import Any, Dict, Optional
-
 import torch
 from torch.utils.data import DataLoader
 from tqdm import tqdm
@@ -19,7 +17,7 @@ class Validator:
     def __init__(
         self,
         model: Flash3D,
-        config: Optional[Flash3DConfig] = None,
+        config: Flash3DConfig | None = None,
     ) -> None:
         self.model = model
         self.config = config or Flash3DConfig()
@@ -29,8 +27,8 @@ class Validator:
     def validate(
         self,
         dataloader: DataLoader,
-        num_samples: Optional[int] = None,
-    ) -> Dict[str, float]:
+        num_samples: int | None = None,
+    ) -> dict[str, float]:
         """Run validation and compute metrics.
 
         Returns:
@@ -38,7 +36,7 @@ class Validator:
         """
         self.model.eval()
 
-        metrics_sum: Dict[str, float] = {"psnr": 0.0, "ssim": 0.0, "l1": 0.0}
+        metrics_sum: dict[str, float] = {"psnr": 0.0, "ssim": 0.0, "l1": 0.0}
         count = 0
 
         for batch in tqdm(dataloader, desc="Validating"):

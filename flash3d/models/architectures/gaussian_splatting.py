@@ -10,7 +10,7 @@ Implements the core Gaussian primitives with:
 from __future__ import annotations
 
 import math
-from typing import Any, Dict, Optional, Tuple
+from typing import Any
 
 import torch
 import torch.nn as nn
@@ -34,7 +34,7 @@ class GaussianSplatting(nn.Module):
 
     def __init__(
         self,
-        config: Optional[Flash3DConfig] = None,
+        config: Flash3DConfig | None = None,
         num_gaussians: int = 100_000,
         sh_degree: int = 3,
         **kwargs: Any,
@@ -108,10 +108,10 @@ class GaussianSplatting(nn.Module):
 
     def forward(
         self,
-        cameras: Optional[Dict[str, torch.Tensor]] = None,
-        images: Optional[torch.Tensor] = None,
+        cameras: dict[str, torch.Tensor] | None = None,
+        images: torch.Tensor | None = None,
         **kwargs: Any,
-    ) -> Dict[str, torch.Tensor]:
+    ) -> dict[str, torch.Tensor]:
         """Render the Gaussian field from given camera viewpoints.
 
         Args:
@@ -128,9 +128,9 @@ class GaussianSplatting(nn.Module):
 
     def render(
         self,
-        camera: Dict[str, torch.Tensor],
+        camera: dict[str, torch.Tensor],
         **kwargs: Any,
-    ) -> Dict[str, torch.Tensor]:
+    ) -> dict[str, torch.Tensor]:
         """Differentiable Gaussian rasterization for a single camera."""
         from flash3d.rendering.rasterizer import rasterize_gaussians
 
@@ -207,7 +207,7 @@ class GaussianSplatting(nn.Module):
 
     def _split_gaussians(self, mask: torch.Tensor) -> None:
         """Split selected Gaussians into two."""
-        n_split = mask.sum().item()
+        mask.sum().item()
         stds = self.get_scales()[mask].repeat(2, 1)
         means = self.means.data[mask].repeat(2, 1)
         samples = torch.randn_like(means) * stds
@@ -237,7 +237,7 @@ class GaussianSplatting(nn.Module):
     def initialize_from_point_cloud(
         self,
         points: torch.Tensor,
-        colors: Optional[torch.Tensor] = None,
+        colors: torch.Tensor | None = None,
     ) -> None:
         """Initialize Gaussian parameters from a 3D point cloud.
 

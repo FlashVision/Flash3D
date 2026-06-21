@@ -3,8 +3,6 @@
 from __future__ import annotations
 
 import torch
-import math
-
 
 # SH basis constants
 SH_C0 = 0.28209479177387814

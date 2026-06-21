@@ -3,9 +3,7 @@
 from __future__ import annotations
 
 from pathlib import Path
-from typing import Any, Dict, Optional
-
-import torch
+from typing import Any
 
 from flash3d.cfg.config import Flash3DConfig
 from flash3d.registry import TASKS
@@ -18,7 +16,7 @@ class SceneReconstructionTask:
     Pipeline: images -> SfM/depth -> 3D representation -> mesh/point cloud.
     """
 
-    def __init__(self, config: Optional[Flash3DConfig] = None) -> None:
+    def __init__(self, config: Flash3DConfig | None = None) -> None:
         self.config = config or Flash3DConfig()
 
     def reconstruct(
@@ -27,7 +25,7 @@ class SceneReconstructionTask:
         method: str = "gaussian_splatting",
         output_path: str | Path = "reconstruction/",
         **kwargs: Any,
-    ) -> Dict[str, Any]:
+    ) -> dict[str, Any]:
         """Run full reconstruction pipeline.
 
         Args:
@@ -43,8 +41,8 @@ class SceneReconstructionTask:
 
         self.config.model.name = method
 
-        from flash3d.models.flash3d_model import Flash3D
         from flash3d.engine.trainer import Trainer
+        from flash3d.models.flash3d_model import Flash3D
 
         model = Flash3D(config=self.config)
         trainer = Trainer(config=self.config, model=model)

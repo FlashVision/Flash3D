@@ -3,7 +3,6 @@
 from __future__ import annotations
 
 from pathlib import Path
-from typing import Any, Dict, List, Optional
 
 import numpy as np
 import torch
@@ -22,7 +21,7 @@ class DepthEstimator:
 
     def __init__(
         self,
-        model: Optional[DepthModel] = None,
+        model: DepthModel | None = None,
         device: str = "cuda",
         min_depth: float = 0.01,
         max_depth: float = 100.0,
@@ -70,7 +69,7 @@ class DepthEstimator:
         input_path: str | Path,
         output_path: str | Path = "depth_output/",
         save_colormap: bool = True,
-    ) -> List[Path]:
+    ) -> list[Path]:
         """Batch depth estimation on a directory of images.
 
         Args:
@@ -134,8 +133,8 @@ class DepthEstimator:
         self,
         depth: torch.Tensor,
         intrinsics: torch.Tensor,
-        image: Optional[torch.Tensor] = None,
-    ) -> Dict[str, torch.Tensor]:
+        image: torch.Tensor | None = None,
+    ) -> dict[str, torch.Tensor]:
         """Convert estimated depth to 3D point cloud.
 
         Args:
@@ -149,7 +148,7 @@ class DepthEstimator:
         from flash3d.geometry.depth import depth_to_point_cloud
 
         points, _ = depth_to_point_cloud(depth, intrinsics)
-        result: Dict[str, torch.Tensor] = {"points": points}
+        result: dict[str, torch.Tensor] = {"points": points}
 
         if image is not None:
             H, W = depth.shape[-2:]

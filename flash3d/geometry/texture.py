@@ -3,12 +3,8 @@
 from __future__ import annotations
 
 import math
-from typing import Dict, List, Optional, Tuple
 
 import numpy as np
-import torch
-import torch.nn as nn
-import torch.nn.functional as F
 
 
 class UVMapper:
@@ -136,7 +132,7 @@ class TextureAtlas:
         self,
         chart_image: np.ndarray,
         padding: int = 2,
-    ) -> Tuple[int, int]:
+    ) -> tuple[int, int]:
         """Pack a UV chart into the atlas.
 
         Args:
@@ -186,11 +182,11 @@ class MeshTexturer:
         self,
         vertices: np.ndarray,
         faces: np.ndarray,
-        images: List[np.ndarray],
-        intrinsics_list: List[np.ndarray],
-        extrinsics_list: List[np.ndarray],
-        vertex_normals: Optional[np.ndarray] = None,
-    ) -> Tuple[np.ndarray, np.ndarray]:
+        images: list[np.ndarray],
+        intrinsics_list: list[np.ndarray],
+        extrinsics_list: list[np.ndarray],
+        vertex_normals: np.ndarray | None = None,
+    ) -> tuple[np.ndarray, np.ndarray]:
         """Generate a texture atlas from multi-view images.
 
         Args:
@@ -309,7 +305,7 @@ class MeshTexturer:
     @staticmethod
     def _compute_barycentric(
         point: np.ndarray, triangle: np.ndarray,
-    ) -> Optional[np.ndarray]:
+    ) -> np.ndarray | None:
         """Compute barycentric coordinates of point in triangle (2D)."""
         v0 = triangle[1] - triangle[0]
         v1 = triangle[2] - triangle[0]

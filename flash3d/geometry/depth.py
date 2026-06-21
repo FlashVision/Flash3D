@@ -2,8 +2,6 @@
 
 from __future__ import annotations
 
-from typing import Optional, Tuple
-
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
@@ -128,9 +126,9 @@ class MonocularDepthEstimator(nn.Module):
 def depth_to_point_cloud(
     depth: torch.Tensor,
     intrinsics: torch.Tensor,
-    extrinsics: Optional[torch.Tensor] = None,
-    mask: Optional[torch.Tensor] = None,
-) -> Tuple[torch.Tensor, Optional[torch.Tensor]]:
+    extrinsics: torch.Tensor | None = None,
+    mask: torch.Tensor | None = None,
+) -> tuple[torch.Tensor, torch.Tensor | None]:
     """Unproject depth map to 3D point cloud.
 
     Args:
@@ -178,7 +176,7 @@ def depth_to_point_cloud(
 def compute_depth_metrics(
     pred: torch.Tensor,
     target: torch.Tensor,
-    mask: Optional[torch.Tensor] = None,
+    mask: torch.Tensor | None = None,
 ) -> dict[str, float]:
     """Compute standard depth estimation metrics.
 

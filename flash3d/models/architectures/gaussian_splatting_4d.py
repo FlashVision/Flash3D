@@ -7,7 +7,7 @@ per-Gaussian position, rotation, and scale offsets as a function of time.
 from __future__ import annotations
 
 import math
-from typing import Any, Dict, Optional, Tuple
+from typing import Any
 
 import torch
 import torch.nn as nn
@@ -90,8 +90,8 @@ class DeformationNetwork(nn.Module):
             else:
                 layers.extend([nn.Linear(hidden_dim, hidden_dim), nn.ReLU(inplace=True)])
 
-        self.backbone = nn.ModuleList([l for l in layers if isinstance(l, nn.Linear)])
-        self.activations = nn.ModuleList([l for l in layers if isinstance(l, nn.ReLU)])
+        self.backbone = nn.ModuleList([layer for layer in layers if isinstance(layer, nn.Linear)])
+        self.activations = nn.ModuleList([layer for layer in layers if isinstance(layer, nn.ReLU)])
         self.skip_layer_idx = num_layers // 2
 
         self.position_head = nn.Linear(hidden_dim, 3)
@@ -107,7 +107,7 @@ class DeformationNetwork(nn.Module):
 
     def forward(
         self, positions: torch.Tensor, time: torch.Tensor,
-    ) -> Dict[str, torch.Tensor]:
+    ) -> dict[str, torch.Tensor]:
         """Predict deformation offsets.
 
         Args:
@@ -155,7 +155,7 @@ class GaussianSplatting4D(nn.Module):
 
     def __init__(
         self,
-        config: Optional[Flash3DConfig] = None,
+        config: Flash3DConfig | None = None,
         num_gaussians: int = 100_000,
         sh_degree: int = 3,
         deformation_hidden_dim: int = 256,
@@ -184,7 +184,7 @@ class GaussianSplatting4D(nn.Module):
 
     def deform_gaussians(
         self, time: float | torch.Tensor,
-    ) -> Dict[str, torch.Tensor]:
+    ) -> dict[str, torch.Tensor]:
         """Apply temporal deformation to canonical Gaussians.
 
         Args:
@@ -231,11 +231,11 @@ class GaussianSplatting4D(nn.Module):
 
     def forward(
         self,
-        cameras: Optional[Dict[str, torch.Tensor]] = None,
-        images: Optional[torch.Tensor] = None,
+        cameras: dict[str, torch.Tensor] | None = None,
+        images: torch.Tensor | None = None,
         time: float = 0.0,
         **kwargs: Any,
-    ) -> Dict[str, torch.Tensor]:
+    ) -> dict[str, torch.Tensor]:
         """Render at a given timestep.
 
         Args:
@@ -257,10 +257,10 @@ class GaussianSplatting4D(nn.Module):
 
     def render(
         self,
-        camera: Dict[str, torch.Tensor],
+        camera: dict[str, torch.Tensor],
         time: float = 0.0,
         **kwargs: Any,
-    ) -> Dict[str, torch.Tensor]:
+    ) -> dict[str, torch.Tensor]:
         """Render the deformed Gaussians at a given time."""
         from flash3d.rendering.rasterizer import rasterize_gaussians
 
@@ -314,7 +314,7 @@ class GaussianSplatting4D(nn.Module):
     def initialize_from_point_cloud(
         self,
         points: torch.Tensor,
-        colors: Optional[torch.Tensor] = None,
+        colors: torch.Tensor | None = None,
     ) -> None:
         """Initialize canonical Gaussians from a point cloud."""
         self.canonical.initialize_from_point_cloud(points, colors)

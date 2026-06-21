@@ -3,7 +3,6 @@
 from __future__ import annotations
 
 from pathlib import Path
-from typing import List, Optional
 
 import numpy as np
 import torch
@@ -12,8 +11,8 @@ import torch
 def visualize_depth(
     depth: torch.Tensor | np.ndarray,
     colormap: str = "turbo",
-    min_val: Optional[float] = None,
-    max_val: Optional[float] = None,
+    min_val: float | None = None,
+    max_val: float | None = None,
 ) -> np.ndarray:
     """Convert depth map to colorized RGB visualization.
 
@@ -51,10 +50,10 @@ def visualize_depth(
 
 def visualize_point_cloud(
     points: torch.Tensor | np.ndarray,
-    colors: Optional[torch.Tensor | np.ndarray] = None,
-    output_path: Optional[str | Path] = None,
+    colors: torch.Tensor | np.ndarray | None = None,
+    output_path: str | Path | None = None,
     point_size: float = 1.0,
-) -> Optional[np.ndarray]:
+) -> np.ndarray | None:
     """Visualize a 3D point cloud (saves to file or returns projection).
 
     Args:
@@ -106,7 +105,7 @@ def visualize_point_cloud(
 
 
 def create_video_from_frames(
-    frames: List[np.ndarray] | List[Path],
+    frames: list[np.ndarray] | list[Path],
     output_path: str | Path,
     fps: int = 30,
 ) -> Path:

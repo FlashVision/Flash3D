@@ -7,8 +7,6 @@ diff-gaussian-rasterization packages.
 
 from __future__ import annotations
 
-from typing import Dict, Optional
-
 import torch
 import torch.nn.functional as F
 
@@ -31,7 +29,7 @@ def rasterize_gaussians(
     far: float = 100.0,
     antialias: bool = False,
     mip_filter_size: float = 0.3,
-) -> Dict[str, torch.Tensor]:
+) -> dict[str, torch.Tensor]:
     """Differentiable rasterization of 3D Gaussians.
 
     Implements alpha-compositing of projected 2D Gaussians sorted by depth.

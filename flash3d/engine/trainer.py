@@ -2,12 +2,10 @@
 
 from __future__ import annotations
 
-import time
 from pathlib import Path
-from typing import Any, Dict, Optional
+from typing import Any
 
 import torch
-import torch.nn as nn
 from torch.utils.data import DataLoader
 from tqdm import tqdm
 
@@ -27,8 +25,8 @@ class Trainer:
 
     def __init__(
         self,
-        config: Optional[Flash3DConfig] = None,
-        model: Optional[Flash3D] = None,
+        config: Flash3DConfig | None = None,
+        model: Flash3D | None = None,
         **kwargs: Any,
     ) -> None:
         self.config = config or Flash3DConfig()
@@ -60,7 +58,7 @@ class Trainer:
         else:
             return torch.optim.Adam(self.model.parameters(), lr=cfg.learning_rate)
 
-    def _build_scheduler(self) -> Optional[torch.optim.lr_scheduler._LRScheduler]:
+    def _build_scheduler(self) -> torch.optim.lr_scheduler._LRScheduler | None:
         """Build learning rate scheduler with exponential decay."""
         return torch.optim.lr_scheduler.ExponentialLR(
             self.optimizer, gamma=0.9999
@@ -68,9 +66,9 @@ class Trainer:
 
     def train(
         self,
-        dataloader: Optional[DataLoader] = None,
-        num_iterations: Optional[int] = None,
-    ) -> Dict[str, float]:
+        dataloader: DataLoader | None = None,
+        num_iterations: int | None = None,
+    ) -> dict[str, float]:
         """Run the training loop.
 
         For 3DGS per-scene optimization, iterates over views.
@@ -81,7 +79,7 @@ class Trainer:
         output_dir.mkdir(parents=True, exist_ok=True)
 
         self.model.train()
-        losses_log: Dict[str, list] = {"total": [], "l1": [], "ssim": []}
+        losses_log: dict[str, list] = {"total": [], "l1": [], "ssim": []}
 
         pbar = tqdm(range(self.iteration, max_iter), desc="Training")
         for iteration in pbar:
@@ -120,7 +118,7 @@ class Trainer:
 
         return {k: sum(v[-100:]) / max(len(v[-100:]), 1) for k, v in losses_log.items()}
 
-    def _train_step(self, batch: Dict[str, Any]) -> tuple[float, Dict[str, float]]:
+    def _train_step(self, batch: dict[str, Any]) -> tuple[float, dict[str, float]]:
         """Single training iteration."""
         self.optimizer.zero_grad()
 
@@ -139,12 +137,12 @@ class Trainer:
 
     def _compute_loss(
         self,
-        output: Dict[str, torch.Tensor],
-        batch: Dict[str, Any],
-    ) -> tuple[torch.Tensor, Dict[str, float]]:
+        output: dict[str, torch.Tensor],
+        batch: dict[str, Any],
+    ) -> tuple[torch.Tensor, dict[str, float]]:
         """Compute combined training loss."""
         loss = torch.tensor(0.0, device=self.device)
-        loss_dict: Dict[str, float] = {}
+        loss_dict: dict[str, float] = {}
 
         if "rgb" in output and "image" in batch:
             target = batch["image"]
@@ -212,7 +210,7 @@ class Trainer:
             )
             self.optimizer = self._build_optimizer()
 
-    def _generate_synthetic_batch(self) -> Dict[str, torch.Tensor]:
+    def _generate_synthetic_batch(self) -> dict[str, torch.Tensor]:
         """Generate a synthetic training batch for testing."""
         W = self.config.render.image_width
         H = self.config.render.image_height

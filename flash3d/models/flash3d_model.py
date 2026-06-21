@@ -3,7 +3,7 @@
 from __future__ import annotations
 
 from pathlib import Path
-from typing import Any, Dict, Optional
+from typing import Any
 
 import torch
 import torch.nn as nn
@@ -23,7 +23,7 @@ class Flash3D(nn.Module):
 
     def __init__(
         self,
-        config: Optional[Flash3DConfig] = None,
+        config: Flash3DConfig | None = None,
         model_name: str = "gaussian_splatting",
         **kwargs: Any,
     ) -> None:
@@ -35,18 +35,16 @@ class Flash3D(nn.Module):
 
     def _build_backbone(self, **kwargs: Any) -> nn.Module:
         if self.model_name not in MODELS:
-            from flash3d.models.architectures.gaussian_splatting import GaussianSplatting
-            from flash3d.models.architectures.nerf import NeRF
             from flash3d.models.architectures.feed_forward_3dgs import FeedForward3DGS  # noqa: F401
 
         return MODELS.build(self.model_name, config=self.config, **kwargs)
 
     def forward(
         self,
-        cameras: Optional[Dict[str, torch.Tensor]] = None,
-        images: Optional[torch.Tensor] = None,
+        cameras: dict[str, torch.Tensor] | None = None,
+        images: torch.Tensor | None = None,
         **kwargs: Any,
-    ) -> Dict[str, torch.Tensor]:
+    ) -> dict[str, torch.Tensor]:
         """Forward pass dispatched to the underlying architecture.
 
         Args:
@@ -60,16 +58,16 @@ class Flash3D(nn.Module):
 
     def render(
         self,
-        camera: Dict[str, torch.Tensor],
+        camera: dict[str, torch.Tensor],
         **kwargs: Any,
-    ) -> Dict[str, torch.Tensor]:
+    ) -> dict[str, torch.Tensor]:
         """Render a single view from the current model state."""
         if hasattr(self.backbone, "render"):
             return self.backbone.render(camera, **kwargs)
         return self.forward(cameras=camera, **kwargs)
 
     @classmethod
-    def from_pretrained(cls, checkpoint_path: str | Path, **kwargs: Any) -> "Flash3D":
+    def from_pretrained(cls, checkpoint_path: str | Path, **kwargs: Any) -> Flash3D:
         """Load a pretrained Flash3D model from checkpoint."""
         checkpoint_path = Path(checkpoint_path)
         checkpoint = torch.load(checkpoint_path, map_location="cpu", weights_only=False)
@@ -80,7 +78,6 @@ class Flash3D(nn.Module):
         elif isinstance(config_data, Flash3DConfig):
             config = config_data
         elif isinstance(config_data, dict):
-            from flash3d.cfg.config import ModelConfig, DataConfig, TrainConfig, RenderConfig
 
             config = Flash3DConfig()
             for k, v in config_data.items():

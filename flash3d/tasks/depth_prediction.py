@@ -2,9 +2,6 @@
 
 from __future__ import annotations
 
-from pathlib import Path
-from typing import Any, Dict, Optional
-
 import torch
 
 from flash3d.cfg.config import Flash3DConfig
@@ -19,7 +16,7 @@ class DepthPredictionTask:
     Evaluation metrics: AbsRel, SqRel, RMSE, delta thresholds.
     """
 
-    def __init__(self, config: Optional[Flash3DConfig] = None) -> None:
+    def __init__(self, config: Flash3DConfig | None = None) -> None:
         self.config = config or Flash3DConfig()
         self.model = None
 
@@ -49,8 +46,8 @@ class DepthPredictionTask:
         self,
         pred: torch.Tensor,
         target: torch.Tensor,
-        mask: Optional[torch.Tensor] = None,
-    ) -> Dict[str, float]:
+        mask: torch.Tensor | None = None,
+    ) -> dict[str, float]:
         """Compute depth estimation metrics."""
         from flash3d.geometry.depth import compute_depth_metrics
         return compute_depth_metrics(pred, target, mask)

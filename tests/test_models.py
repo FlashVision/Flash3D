@@ -1,14 +1,13 @@
 """Tests for Flash3D models."""
 
-import pytest
 import torch
 
 from flash3d.cfg.config import Flash3DConfig
-from flash3d.models.flash3d_model import Flash3D
-from flash3d.models.architectures.gaussian_splatting import GaussianSplatting
-from flash3d.models.architectures.nerf import NeRF, PositionalEncoding, HashEncoding
 from flash3d.models.architectures.feed_forward_3dgs import FeedForward3DGS
-from flash3d.models.lora import LoRALinear, apply_lora
+from flash3d.models.architectures.gaussian_splatting import GaussianSplatting
+from flash3d.models.architectures.nerf import HashEncoding, NeRF, PositionalEncoding
+from flash3d.models.flash3d_model import Flash3D
+from flash3d.models.lora import LoRALinear
 
 
 class TestGaussianSplatting:

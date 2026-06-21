@@ -2,7 +2,7 @@
 
 from __future__ import annotations
 
-from typing import Callable, Optional, Tuple
+from collections.abc import Callable
 
 import numpy as np
 import torch
@@ -10,13 +10,13 @@ import torch
 
 def extract_mesh_marching_cubes(
     query_fn: Callable[[torch.Tensor], torch.Tensor],
-    bounds_min: Tuple[float, float, float] = (-1.0, -1.0, -1.0),
-    bounds_max: Tuple[float, float, float] = (1.0, 1.0, 1.0),
+    bounds_min: tuple[float, float, float] = (-1.0, -1.0, -1.0),
+    bounds_max: tuple[float, float, float] = (1.0, 1.0, 1.0),
     resolution: int = 128,
     threshold: float = 0.5,
     batch_size: int = 65536,
     device: torch.device = torch.device("cpu"),
-) -> Tuple[np.ndarray, np.ndarray]:
+) -> tuple[np.ndarray, np.ndarray]:
     """Extract a triangle mesh from a density field using marching cubes.
 
     Args:
@@ -68,10 +68,9 @@ def extract_mesh_marching_cubes(
 def _simple_marching_cubes(
     grid: np.ndarray,
     threshold: float,
-) -> Tuple[np.ndarray, np.ndarray]:
+) -> tuple[np.ndarray, np.ndarray]:
     """Simplified marching cubes fallback when skimage is not available."""
     vertices = []
-    faces = []
 
     res = grid.shape[0]
     for i in range(res - 1):
@@ -82,7 +81,7 @@ def _simple_marching_cubes(
                 if above.all() or not above.any():
                     continue
                 center = np.array([i + 0.5, j + 0.5, k + 0.5])
-                vid = len(vertices)
+                len(vertices)
                 vertices.append(center)
 
     if not vertices:
@@ -95,7 +94,7 @@ def save_mesh_obj(
     vertices: np.ndarray,
     faces: np.ndarray,
     path: str,
-    vertex_colors: Optional[np.ndarray] = None,
+    vertex_colors: np.ndarray | None = None,
 ) -> None:
     """Save mesh to OBJ format.
 

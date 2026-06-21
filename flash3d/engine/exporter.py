@@ -3,10 +3,10 @@
 from __future__ import annotations
 
 from pathlib import Path
-from typing import Any, Optional
+from typing import Any
 
-import torch
 import numpy as np
+import torch
 
 from flash3d.models.flash3d_model import Flash3D
 
@@ -16,8 +16,8 @@ class Exporter:
 
     def __init__(
         self,
-        model: Optional[Flash3D] = None,
-        checkpoint_path: Optional[str | Path] = None,
+        model: Flash3D | None = None,
+        checkpoint_path: str | Path | None = None,
     ) -> None:
         if model is not None:
             self.model = model

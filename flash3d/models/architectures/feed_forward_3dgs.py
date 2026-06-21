@@ -7,7 +7,7 @@ Supports pose-free reconstruction from sparse views.
 
 from __future__ import annotations
 
-from typing import Any, Dict, Optional, Tuple
+from typing import Any
 
 import torch
 import torch.nn as nn
@@ -98,7 +98,7 @@ class GaussianHead(nn.Module):
             nn.Conv2d(in_channels, num_sh * 3, 1),
         )
 
-    def forward(self, features: torch.Tensor) -> Dict[str, torch.Tensor]:
+    def forward(self, features: torch.Tensor) -> dict[str, torch.Tensor]:
         """Predict Gaussian parameters from feature maps.
 
         Args:
@@ -132,7 +132,7 @@ class FeedForward3DGS(nn.Module):
 
     def __init__(
         self,
-        config: Optional[Flash3DConfig] = None,
+        config: Flash3DConfig | None = None,
         base_channels: int = 64,
         num_attention_layers: int = 4,
         sh_degree: int = 3,
@@ -165,10 +165,10 @@ class FeedForward3DGS(nn.Module):
 
     def forward(
         self,
-        cameras: Optional[Dict[str, torch.Tensor]] = None,
-        images: Optional[torch.Tensor] = None,
+        cameras: dict[str, torch.Tensor] | None = None,
+        images: torch.Tensor | None = None,
         **kwargs: Any,
-    ) -> Dict[str, torch.Tensor]:
+    ) -> dict[str, torch.Tensor]:
         """Predict 3D Gaussians from input images.
 
         Args:
@@ -216,14 +216,14 @@ class FeedForward3DGS(nn.Module):
     def predict_and_render(
         self,
         context_images: torch.Tensor,
-        context_cameras: Dict[str, torch.Tensor],
-        target_camera: Dict[str, torch.Tensor],
-    ) -> Dict[str, torch.Tensor]:
+        context_cameras: dict[str, torch.Tensor],
+        target_camera: dict[str, torch.Tensor],
+    ) -> dict[str, torch.Tensor]:
         """Predict Gaussians from context views and render a target view."""
         gaussians = self.forward(images=context_images, cameras=context_cameras)
 
         B, _, H, W = gaussians["depth"].shape
-        depth = gaussians["depth"].reshape(B, -1, 1)
+        gaussians["depth"].reshape(B, -1, 1)
         scales = gaussians["scales"].permute(0, 2, 3, 1).reshape(B, -1, 3)
         rotations = gaussians["rotations"].permute(0, 2, 3, 1).reshape(B, -1, 4)
         opacities = gaussians["opacities"].reshape(B, -1, 1)

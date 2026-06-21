@@ -2,8 +2,6 @@
 
 from __future__ import annotations
 
-from typing import Any, Dict, Optional
-
 import torch
 import torch.nn as nn
 
@@ -20,12 +18,12 @@ class PointCloudSegmentationTask:
 
     def __init__(
         self,
-        config: Optional[Flash3DConfig] = None,
+        config: Flash3DConfig | None = None,
         num_classes: int = 40,
     ) -> None:
         self.config = config or Flash3DConfig()
         self.num_classes = num_classes
-        self.model: Optional[nn.Module] = None
+        self.model: nn.Module | None = None
 
     def setup(self, feature_dim: int = 64) -> None:
         """Initialize segmentation head."""
@@ -34,7 +32,7 @@ class PointCloudSegmentationTask:
             num_classes=self.num_classes,
         )
 
-    def predict(self, points: torch.Tensor, features: Optional[torch.Tensor] = None) -> torch.Tensor:
+    def predict(self, points: torch.Tensor, features: torch.Tensor | None = None) -> torch.Tensor:
         """Predict per-point class labels.
 
         Args:

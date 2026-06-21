@@ -1,17 +1,19 @@
 """Tests for Flash3D geometry module."""
 
-import pytest
 import torch
-import numpy as np
 
+from flash3d.geometry.depth import (
+    MonocularDepthEstimator,
+    compute_depth_metrics,
+    depth_to_point_cloud,
+)
 from flash3d.geometry.point_cloud import PointCloud
-from flash3d.geometry.depth import MonocularDepthEstimator, depth_to_point_cloud, compute_depth_metrics
 from flash3d.geometry.transforms_3d import (
     SE3,
-    rotation_matrix_from_euler,
-    quaternion_to_rotation_matrix,
-    rotation_matrix_to_quaternion,
     look_at,
+    quaternion_to_rotation_matrix,
+    rotation_matrix_from_euler,
+    rotation_matrix_to_quaternion,
 )
 
 

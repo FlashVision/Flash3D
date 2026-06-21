@@ -3,7 +3,7 @@
 from __future__ import annotations
 
 from pathlib import Path
-from typing import Any, Dict, Optional
+from typing import Any
 
 
 class TrainingCallback:
@@ -21,7 +21,7 @@ class TrainingCallback:
     def on_iteration_end(self, trainer: Any, iteration: int, loss: float) -> None:
         pass
 
-    def on_validation_end(self, trainer: Any, metrics: Dict[str, float]) -> None:
+    def on_validation_end(self, trainer: Any, metrics: dict[str, float]) -> None:
         pass
 
 
@@ -105,7 +105,7 @@ class EarlyStoppingCallback(TrainingCallback):
         self.best_loss = float("inf")
         self.wait = 0
 
-    def on_validation_end(self, trainer: Any, metrics: Dict[str, float]) -> None:
+    def on_validation_end(self, trainer: Any, metrics: dict[str, float]) -> None:
         loss = metrics.get("total", metrics.get("l1", float("inf")))
         if loss < self.best_loss - self.min_delta:
             self.best_loss = loss

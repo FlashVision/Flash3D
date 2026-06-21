@@ -2,8 +2,6 @@
 
 from __future__ import annotations
 
-from typing import Dict, Optional
-
 import torch
 
 
@@ -12,7 +10,7 @@ def volume_render_rays(
     rgb: torch.Tensor,
     t_vals: torch.Tensor,
     white_background: bool = False,
-) -> Dict[str, torch.Tensor]:
+) -> dict[str, torch.Tensor]:
     """Classic NeRF volume rendering via numerical quadrature.
 
     Implements the integral: C(r) = sum_i T_i (1 - exp(-sigma_i * delta_i)) * c_i

@@ -3,7 +3,7 @@
 from __future__ import annotations
 
 from pathlib import Path
-from typing import Any, Dict, Optional, Union
+from typing import Any
 
 import numpy as np
 import torch
@@ -11,7 +11,7 @@ import torch
 
 def load_image(
     path: str | Path,
-    size: Optional[tuple[int, int]] = None,
+    size: tuple[int, int] | None = None,
     normalize: bool = True,
 ) -> torch.Tensor:
     """Load an image as a PyTorch tensor.
@@ -69,7 +69,7 @@ def save_image(
     Image.fromarray(arr).save(path)
 
 
-def load_config(path: str | Path) -> Dict[str, Any]:
+def load_config(path: str | Path) -> dict[str, Any]:
     """Load a YAML configuration file."""
     import yaml
 
@@ -77,7 +77,7 @@ def load_config(path: str | Path) -> Dict[str, Any]:
         return yaml.safe_load(f)
 
 
-def save_config(config: Dict[str, Any], path: str | Path) -> None:
+def save_config(config: dict[str, Any], path: str | Path) -> None:
     """Save a configuration dict to YAML."""
     import yaml
 
@@ -88,12 +88,12 @@ def save_config(config: Dict[str, Any], path: str | Path) -> None:
         yaml.dump(config, f, default_flow_style=False, sort_keys=False)
 
 
-def load_checkpoint(path: str | Path) -> Dict[str, Any]:
+def load_checkpoint(path: str | Path) -> dict[str, Any]:
     """Load a PyTorch checkpoint."""
     return torch.load(path, map_location="cpu", weights_only=False)
 
 
-def save_checkpoint(state: Dict[str, Any], path: str | Path) -> None:
+def save_checkpoint(state: dict[str, Any], path: str | Path) -> None:
     """Save a PyTorch checkpoint."""
     path = Path(path)
     path.parent.mkdir(parents=True, exist_ok=True)

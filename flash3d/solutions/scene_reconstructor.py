@@ -3,7 +3,7 @@
 from __future__ import annotations
 
 from pathlib import Path
-from typing import Any, Dict, Optional
+from typing import Any
 
 import torch
 
@@ -24,7 +24,7 @@ class SceneReconstructor:
     def __init__(
         self,
         method: str = "gaussian_splatting",
-        config: Optional[Flash3DConfig] = None,
+        config: Flash3DConfig | None = None,
         device: str = "cuda",
     ) -> None:
         self.method = method
@@ -39,7 +39,7 @@ class SceneReconstructor:
         output_path: str | Path = "reconstruction/",
         num_iterations: int = 30_000,
         **kwargs: Any,
-    ) -> Dict[str, Any]:
+    ) -> dict[str, Any]:
         """Reconstruct a 3D scene from input images.
 
         Args:
@@ -58,9 +58,9 @@ class SceneReconstructor:
         self.config.output_dir = str(output_path)
         self.config.train.max_iterations = num_iterations
 
-        from flash3d.models.flash3d_model import Flash3D
-        from flash3d.engine.trainer import Trainer
         from flash3d.engine.exporter import Exporter
+        from flash3d.engine.trainer import Trainer
+        from flash3d.models.flash3d_model import Flash3D
 
         model = Flash3D(config=self.config)
         model = model.to(self.device)
@@ -104,8 +104,8 @@ class SceneReconstructor:
     def reconstruct_feed_forward(
         self,
         images: torch.Tensor,
-        cameras: Optional[Dict[str, torch.Tensor]] = None,
-    ) -> Dict[str, torch.Tensor]:
+        cameras: dict[str, torch.Tensor] | None = None,
+    ) -> dict[str, torch.Tensor]:
         """Single-pass reconstruction using feed-forward model.
 
         Args:

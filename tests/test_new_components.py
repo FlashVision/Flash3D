@@ -1,6 +1,5 @@
 """Tests for new Flash3D P0 components."""
 
-import pytest
 import numpy as np
 import torch
 

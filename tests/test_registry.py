@@ -2,7 +2,7 @@
 
 import pytest
 
-from flash3d.registry import Registry, MODELS, RENDERERS, DATASETS, TASKS
+from flash3d.registry import DATASETS, MODELS, RENDERERS, TASKS, Registry
 
 
 class TestRegistry:
@@ -76,7 +76,11 @@ class TestRegistry:
 
     def test_models_populated(self):
         # Trigger model registration by importing architectures
-        from flash3d.models.architectures import gaussian_splatting, nerf, feed_forward_3dgs  # noqa: F401
+        from flash3d.models.architectures import (  # noqa: F401
+            feed_forward_3dgs,
+            gaussian_splatting,
+            nerf,
+        )
 
         assert "gaussian_splatting" in MODELS
         assert "nerf" in MODELS

@@ -7,8 +7,7 @@ with unbounded scene handling.
 
 from __future__ import annotations
 
-import math
-from typing import Any, Dict, Optional, Tuple
+from typing import Any
 
 import torch
 import torch.nn as nn
@@ -145,7 +144,7 @@ class MipNeRFMLP(nn.Module):
         dir_dim: int,
         hidden_dim: int = 256,
         num_layers: int = 8,
-        skip_connections: Tuple[int, ...] = (4,),
+        skip_connections: tuple[int, ...] = (4,),
     ) -> None:
         super().__init__()
         self.skip_connections = skip_connections
@@ -170,7 +169,7 @@ class MipNeRFMLP(nn.Module):
 
     def forward(
         self, pos_enc: torch.Tensor, dir_enc: torch.Tensor,
-    ) -> Tuple[torch.Tensor, torch.Tensor]:
+    ) -> tuple[torch.Tensor, torch.Tensor]:
         h = pos_enc
         for i, layer in enumerate(self.layers):
             if i in self.skip_connections:
@@ -196,7 +195,7 @@ class MipNeRF360(nn.Module):
 
     def __init__(
         self,
-        config: Optional[Flash3DConfig] = None,
+        config: Flash3DConfig | None = None,
         num_pos_frequencies: int = 16,
         num_dir_frequencies: int = 4,
         hidden_dim: int = 256,
@@ -238,20 +237,20 @@ class MipNeRF360(nn.Module):
 
     def forward(
         self,
-        cameras: Optional[Dict[str, torch.Tensor]] = None,
-        images: Optional[torch.Tensor] = None,
+        cameras: dict[str, torch.Tensor] | None = None,
+        images: torch.Tensor | None = None,
         **kwargs: Any,
-    ) -> Dict[str, torch.Tensor]:
+    ) -> dict[str, torch.Tensor]:
         if cameras is None:
             return {"model": "mip_nerf_360", "num_parameters": self.num_parameters}
         return self.render(cameras, **kwargs)
 
     def render(
         self,
-        camera: Dict[str, torch.Tensor],
+        camera: dict[str, torch.Tensor],
         return_distortion_loss: bool = False,
         **kwargs: Any,
-    ) -> Dict[str, torch.Tensor]:
+    ) -> dict[str, torch.Tensor]:
         """Render using Mip-NeRF 360 with proposal sampling."""
         from flash3d.rendering.ray_marching import volume_render_rays
 
@@ -310,7 +309,7 @@ class MipNeRF360(nn.Module):
         rays_o: torch.Tensor,
         rays_d: torch.Tensor,
         t_vals: torch.Tensor,
-    ) -> Tuple[torch.Tensor, torch.Tensor]:
+    ) -> tuple[torch.Tensor, torch.Tensor]:
         """Compute Gaussian approximation of conical frustums.
 
         Returns mean and diagonal covariance for each interval.
@@ -330,7 +329,7 @@ class MipNeRF360(nn.Module):
         t_delta = t_vals[..., 1:] - t_vals[..., :-1]
         w = F.softmax(weights, dim=-1)
 
-        ut = (w * t_mid).sum(dim=-1, keepdim=True)
+        (w * t_mid).sum(dim=-1, keepdim=True)
         dist = torch.abs(t_mid.unsqueeze(-1) - t_mid.unsqueeze(-2))
         loss = (w.unsqueeze(-1) * w.unsqueeze(-2) * dist).sum(dim=(-1, -2))
         loss = loss + (1.0 / 3.0) * (w ** 2 * t_delta).sum(dim=-1)

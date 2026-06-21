@@ -4,7 +4,7 @@ from __future__ import annotations
 
 from dataclasses import dataclass, field
 from pathlib import Path
-from typing import Any, Dict, Optional
+from typing import Any
 
 import yaml
 
@@ -16,7 +16,7 @@ class ModelConfig:
     sh_degree: int = 3
     use_lora: bool = False
     lora_rank: int = 16
-    pretrained: Optional[str] = None
+    pretrained: str | None = None
 
 
 @dataclass
@@ -127,6 +127,6 @@ class Flash3DConfig:
         with open(path, "w") as f:
             yaml.dump(_to_dict(self), f, default_flow_style=False, sort_keys=False)
 
-    def to_dict(self) -> Dict[str, Any]:
+    def to_dict(self) -> dict[str, Any]:
         import dataclasses
         return dataclasses.asdict(self)

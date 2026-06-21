@@ -3,11 +3,9 @@
 from __future__ import annotations
 
 from dataclasses import dataclass
-from typing import Optional, Tuple
 
 import torch
 import torch.nn.functional as F
-import numpy as np
 
 
 @dataclass
@@ -28,8 +26,8 @@ class Camera:
     cy: float
     width: int
     height: int
-    R: Optional[torch.Tensor] = None
-    t: Optional[torch.Tensor] = None
+    R: torch.Tensor | None = None
+    t: torch.Tensor | None = None
     near: float = 0.01
     far: float = 100.0
 
@@ -100,7 +98,7 @@ def generate_rays(
     extrinsics: torch.Tensor,
     width: int,
     height: int,
-) -> Tuple[torch.Tensor, torch.Tensor]:
+) -> tuple[torch.Tensor, torch.Tensor]:
     """Generate camera rays for all pixels.
 
     Args:
@@ -148,7 +146,7 @@ def perspective_projection(
     points3d: torch.Tensor,
     intrinsics: torch.Tensor,
     extrinsics: torch.Tensor,
-) -> Tuple[torch.Tensor, torch.Tensor]:
+) -> tuple[torch.Tensor, torch.Tensor]:
     """Project 3D points to 2D pixel coordinates.
 
     Args:

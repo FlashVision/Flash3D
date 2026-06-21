@@ -3,7 +3,6 @@
 from __future__ import annotations
 
 from pathlib import Path
-from typing import Optional, Tuple
 
 import numpy as np
 import torch
@@ -19,8 +18,8 @@ class PointCloud:
     def __init__(
         self,
         points: torch.Tensor,
-        colors: Optional[torch.Tensor] = None,
-        normals: Optional[torch.Tensor] = None,
+        colors: torch.Tensor | None = None,
+        normals: torch.Tensor | None = None,
     ) -> None:
         """
         Args:
@@ -45,17 +44,17 @@ class PointCloud:
         return self.points.mean(dim=0)
 
     @property
-    def bounding_box(self) -> Tuple[torch.Tensor, torch.Tensor]:
+    def bounding_box(self) -> tuple[torch.Tensor, torch.Tensor]:
         return self.points.min(dim=0).values, self.points.max(dim=0).values
 
-    def to(self, device: torch.device) -> "PointCloud":
+    def to(self, device: torch.device) -> PointCloud:
         """Move point cloud to device."""
         points = self.points.to(device)
         colors = self.colors.to(device) if self.colors is not None else None
         normals = self.normals.to(device) if self.normals is not None else None
         return PointCloud(points, colors, normals)
 
-    def normalize(self, target_radius: float = 1.0) -> "PointCloud":
+    def normalize(self, target_radius: float = 1.0) -> PointCloud:
         """Center and scale point cloud to fit in a sphere."""
         centroid = self.centroid
         points = self.points - centroid
@@ -64,14 +63,14 @@ class PointCloud:
             points = points * (target_radius / max_dist)
         return PointCloud(points, self.colors, self.normals)
 
-    def random_subsample(self, num_points: int) -> "PointCloud":
+    def random_subsample(self, num_points: int) -> PointCloud:
         """Randomly subsample to a fixed number of points."""
         if self.num_points <= num_points:
             return self
         indices = torch.randperm(self.num_points)[:num_points]
         return self._index(indices)
 
-    def voxel_downsample(self, voxel_size: float) -> "PointCloud":
+    def voxel_downsample(self, voxel_size: float) -> PointCloud:
         """Voxel grid downsampling."""
         quantized = torch.floor(self.points / voxel_size).long()
 
@@ -92,9 +91,8 @@ class PointCloud:
         self,
         k_neighbors: int = 20,
         std_ratio: float = 2.0,
-    ) -> "PointCloud":
+    ) -> PointCloud:
         """Remove statistical outliers based on mean distance to k nearest neighbors."""
-        from torch.cdist import cdist  # type: ignore
 
         dists = torch.cdist(self.points, self.points)
         dists.fill_diagonal_(float("inf"))
@@ -107,7 +105,7 @@ class PointCloud:
 
         return self._index(mask.nonzero(as_tuple=False).squeeze(-1))
 
-    def estimate_normals(self, k_neighbors: int = 30) -> "PointCloud":
+    def estimate_normals(self, k_neighbors: int = 30) -> PointCloud:
         """Estimate surface normals using PCA on local neighborhoods."""
         dists = torch.cdist(self.points, self.points)
         _, knn_indices = dists.topk(k_neighbors, largest=False, dim=-1)
@@ -122,14 +120,14 @@ class PointCloud:
 
         return PointCloud(self.points, self.colors, normals)
 
-    def _index(self, indices: torch.Tensor) -> "PointCloud":
+    def _index(self, indices: torch.Tensor) -> PointCloud:
         points = self.points[indices]
         colors = self.colors[indices] if self.colors is not None else None
         normals = self.normals[indices] if self.normals is not None else None
         return PointCloud(points, colors, normals)
 
     @classmethod
-    def from_ply(cls, path: str | Path) -> "PointCloud":
+    def from_ply(cls, path: str | Path) -> PointCloud:
         """Load point cloud from PLY file."""
         from plyfile import PlyData
 
@@ -188,7 +186,7 @@ class PointCloud:
         PlyData([vertex]).write(str(path))
 
     @classmethod
-    def from_numpy(cls, points: np.ndarray, colors: Optional[np.ndarray] = None) -> "PointCloud":
+    def from_numpy(cls, points: np.ndarray, colors: np.ndarray | None = None) -> PointCloud:
         """Create from numpy arrays."""
         pts = torch.from_numpy(points.astype(np.float32))
         cols = torch.from_numpy(colors.astype(np.float32)) if colors is not None else None

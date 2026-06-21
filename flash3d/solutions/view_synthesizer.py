@@ -3,10 +3,10 @@
 from __future__ import annotations
 
 from pathlib import Path
-from typing import Any, Dict, List, Optional
+from typing import Any
 
-import torch
 import numpy as np
+import torch
 
 from flash3d.cfg.config import Flash3DConfig
 
@@ -23,8 +23,8 @@ class ViewSynthesizer:
 
     def __init__(
         self,
-        model: Optional[Any] = None,
-        config: Optional[Flash3DConfig] = None,
+        model: Any | None = None,
+        config: Flash3DConfig | None = None,
         device: str = "cuda",
     ) -> None:
         self.config = config or Flash3DConfig()
@@ -32,7 +32,7 @@ class ViewSynthesizer:
         self.model = model
 
     @classmethod
-    def from_checkpoint(cls, checkpoint_path: str | Path, **kwargs: Any) -> "ViewSynthesizer":
+    def from_checkpoint(cls, checkpoint_path: str | Path, **kwargs: Any) -> ViewSynthesizer:
         """Load from a trained checkpoint."""
         from flash3d.models.flash3d_model import Flash3D
 
@@ -49,15 +49,15 @@ class ViewSynthesizer:
         method: str = "gaussian_splatting",
         num_iterations: int = 30_000,
         **kwargs: Any,
-    ) -> "ViewSynthesizer":
+    ) -> ViewSynthesizer:
         """Train a model on a scene and return a ready synthesizer."""
         config = Flash3DConfig()
         config.model.name = method
         config.data.root_dir = str(images_path)
         config.train.max_iterations = num_iterations
 
-        from flash3d.models.flash3d_model import Flash3D
         from flash3d.engine.trainer import Trainer
+        from flash3d.models.flash3d_model import Flash3D
 
         device = "cuda" if torch.cuda.is_available() else "cpu"
         model = Flash3D(config=config).to(device)
@@ -68,7 +68,7 @@ class ViewSynthesizer:
         return cls(model=model, config=config, device=device)
 
     @torch.no_grad()
-    def render_view(self, camera_dict: Dict[str, Any]) -> Dict[str, torch.Tensor]:
+    def render_view(self, camera_dict: dict[str, Any]) -> dict[str, torch.Tensor]:
         """Render a single view."""
         camera_dict = {k: v.to(self.device) if isinstance(v, torch.Tensor) else v
                       for k, v in camera_dict.items()}
@@ -80,8 +80,8 @@ class ViewSynthesizer:
         num_frames: int = 120,
         radius: float = 3.0,
         elevation: float = 0.3,
-        output_dir: Optional[str | Path] = None,
-    ) -> List[np.ndarray]:
+        output_dir: str | Path | None = None,
+    ) -> list[np.ndarray]:
         """Render an orbital trajectory around the scene.
 
         Args:
@@ -132,10 +132,10 @@ class ViewSynthesizer:
     @torch.no_grad()
     def interpolate_views(
         self,
-        camera_start: Dict[str, Any],
-        camera_end: Dict[str, Any],
+        camera_start: dict[str, Any],
+        camera_end: dict[str, Any],
         num_frames: int = 60,
-    ) -> List[np.ndarray]:
+    ) -> list[np.ndarray]:
         """Smoothly interpolate between two camera viewpoints."""
         frames = []
         for i in range(num_frames):

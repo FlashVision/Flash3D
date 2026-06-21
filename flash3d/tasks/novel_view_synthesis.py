@@ -2,7 +2,7 @@
 
 from __future__ import annotations
 
-from typing import Any, Dict, Optional
+from typing import Any
 
 import torch
 
@@ -18,20 +18,20 @@ class NovelViewSynthesisTask:
     Evaluation metrics: PSNR, SSIM, LPIPS.
     """
 
-    def __init__(self, config: Optional[Flash3DConfig] = None) -> None:
+    def __init__(self, config: Flash3DConfig | None = None) -> None:
         self.config = config or Flash3DConfig()
         self.metrics = ["psnr", "ssim", "lpips"]
 
     def setup(self, model_name: str = "gaussian_splatting") -> None:
         """Set up model and training pipeline for NVS."""
-        from flash3d.models.flash3d_model import Flash3D
         from flash3d.engine.trainer import Trainer
+        from flash3d.models.flash3d_model import Flash3D
 
         self.config.model.name = model_name
         self.model = Flash3D(config=self.config)
         self.trainer = Trainer(config=self.config, model=self.model)
 
-    def train(self, data_path: str, **kwargs: Any) -> Dict[str, float]:
+    def train(self, data_path: str, **kwargs: Any) -> dict[str, float]:
         """Train for novel view synthesis."""
         return self.trainer.train(**kwargs)
 
@@ -39,7 +39,7 @@ class NovelViewSynthesisTask:
         self,
         pred: torch.Tensor,
         target: torch.Tensor,
-    ) -> Dict[str, float]:
+    ) -> dict[str, float]:
         """Compute NVS metrics between predicted and ground truth views."""
         from flash3d.analytics.metrics import compute_psnr, compute_ssim
 

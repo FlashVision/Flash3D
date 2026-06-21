@@ -7,12 +7,15 @@ pipelines (point cloud generation, 3DGS initialization, etc.).
 from __future__ import annotations
 
 from pathlib import Path
-from typing import Optional, Tuple, Union
+from typing import TYPE_CHECKING
 
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
 from torchvision import transforms
+
+if TYPE_CHECKING:
+    from PIL import Image as PILImage
 
 from flash3d.geometry.depth import depth_to_point_cloud
 
@@ -33,7 +36,7 @@ class DepthAnythingV2(nn.Module):
     def __init__(
         self,
         variant: str = "small",
-        model_name: Optional[str] = None,
+        model_name: str | None = None,
         max_depth: float = 80.0,
         device: str = "auto",
     ) -> None:
@@ -54,7 +57,7 @@ class DepthAnythingV2(nn.Module):
 
     def _load_model(self) -> None:
         try:
-            from transformers import AutoModelForDepthEstimation, AutoImageProcessor
+            from transformers import AutoImageProcessor, AutoModelForDepthEstimation
 
             self._processor = AutoImageProcessor.from_pretrained(self._model_name)
             self._model = AutoModelForDepthEstimation.from_pretrained(
@@ -89,8 +92,8 @@ class DepthAnythingV2(nn.Module):
             return self._model(image)
 
         if self._processor is not None:
-            from PIL import Image as PILImage
             import numpy as np
+            from PIL import Image as PILImage
             results = []
             for i in range(image.shape[0]):
                 img_np = image[i].cpu().permute(1, 2, 0).numpy()
@@ -114,8 +117,8 @@ class DepthAnythingV2(nn.Module):
     @torch.no_grad()
     def predict(
         self,
-        image: Union[str, Path, "PILImage", torch.Tensor],
-        output_size: Optional[Tuple[int, int]] = None,
+        image: str | Path | PILImage | torch.Tensor,
+        output_size: tuple[int, int] | None = None,
     ) -> torch.Tensor:
         """Predict depth from various image formats.
 
@@ -154,10 +157,10 @@ class DepthAnythingV2(nn.Module):
 
     def predict_and_unproject(
         self,
-        image: Union[str, Path, torch.Tensor],
+        image: str | Path | torch.Tensor,
         intrinsics: torch.Tensor,
-        extrinsics: Optional[torch.Tensor] = None,
-    ) -> Tuple[torch.Tensor, Optional[torch.Tensor]]:
+        extrinsics: torch.Tensor | None = None,
+    ) -> tuple[torch.Tensor, torch.Tensor | None]:
         """Predict depth and unproject to 3D point cloud.
 
         Args:

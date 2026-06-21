@@ -6,8 +6,6 @@ segmentation with multi-scale grouping (MSG) and set abstraction layers.
 
 from __future__ import annotations
 
-from typing import List, Optional, Tuple
-
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
@@ -118,7 +116,7 @@ class PointNetSetAbstraction(nn.Module):
         radius: float,
         n_sample: int,
         in_channel: int,
-        mlp_channels: List[int],
+        mlp_channels: list[int],
         group_all: bool = False,
     ) -> None:
         super().__init__()
@@ -136,8 +134,8 @@ class PointNetSetAbstraction(nn.Module):
             last_channel = out_channel
 
     def forward(
-        self, xyz: torch.Tensor, points: Optional[torch.Tensor],
-    ) -> Tuple[torch.Tensor, torch.Tensor]:
+        self, xyz: torch.Tensor, points: torch.Tensor | None,
+    ) -> tuple[torch.Tensor, torch.Tensor]:
         """
         Args:
             xyz: (B, N, 3) coordinates.
@@ -162,8 +160,8 @@ class PointNetSetAbstraction(nn.Module):
         return new_xyz, new_points
 
     def _sample_and_group(
-        self, xyz: torch.Tensor, points: Optional[torch.Tensor],
-    ) -> Tuple[torch.Tensor, torch.Tensor]:
+        self, xyz: torch.Tensor, points: torch.Tensor | None,
+    ) -> tuple[torch.Tensor, torch.Tensor]:
         fps_idx = farthest_point_sample(xyz, self.n_point)
         new_xyz = index_points(xyz, fps_idx)
         idx = query_ball_point(self.radius, self.n_sample, xyz, new_xyz)
@@ -178,8 +176,8 @@ class PointNetSetAbstraction(nn.Module):
         return new_xyz, new_points
 
     def _sample_and_group_all(
-        self, xyz: torch.Tensor, points: Optional[torch.Tensor],
-    ) -> Tuple[torch.Tensor, torch.Tensor]:
+        self, xyz: torch.Tensor, points: torch.Tensor | None,
+    ) -> tuple[torch.Tensor, torch.Tensor]:
         B, N, _ = xyz.shape
         new_xyz = torch.zeros(B, 1, 3, device=xyz.device)
         grouped_xyz = xyz.unsqueeze(1)
@@ -199,10 +197,10 @@ class PointNetSetAbstractionMSG(nn.Module):
     def __init__(
         self,
         n_point: int,
-        radius_list: List[float],
-        n_sample_list: List[int],
+        radius_list: list[float],
+        n_sample_list: list[int],
         in_channel: int,
-        mlp_channels_list: List[List[int]],
+        mlp_channels_list: list[list[int]],
     ) -> None:
         super().__init__()
         self.n_point = n_point
@@ -224,8 +222,8 @@ class PointNetSetAbstractionMSG(nn.Module):
             self.bn_blocks.append(bns)
 
     def forward(
-        self, xyz: torch.Tensor, points: Optional[torch.Tensor],
-    ) -> Tuple[torch.Tensor, torch.Tensor]:
+        self, xyz: torch.Tensor, points: torch.Tensor | None,
+    ) -> tuple[torch.Tensor, torch.Tensor]:
         fps_idx = farthest_point_sample(xyz, self.n_point)
         new_xyz = index_points(xyz, fps_idx)
 
@@ -256,7 +254,7 @@ class FeaturePropagation(nn.Module):
     Interpolates features from subsampled points back to original resolution.
     """
 
-    def __init__(self, in_channel: int, mlp_channels: List[int]) -> None:
+    def __init__(self, in_channel: int, mlp_channels: list[int]) -> None:
         super().__init__()
         self.mlps = nn.ModuleList()
         self.bns = nn.ModuleList()
@@ -270,7 +268,7 @@ class FeaturePropagation(nn.Module):
         self,
         xyz1: torch.Tensor,
         xyz2: torch.Tensor,
-        points1: Optional[torch.Tensor],
+        points1: torch.Tensor | None,
         points2: torch.Tensor,
     ) -> torch.Tensor:
         """Propagate features from xyz2 to xyz1 via inverse-distance interpolation.
@@ -352,8 +350,8 @@ class PointNetPP(nn.Module):
         return 1024
 
     def forward(
-        self, xyz: torch.Tensor, features: Optional[torch.Tensor] = None,
-    ) -> Tuple[torch.Tensor, torch.Tensor, list]:
+        self, xyz: torch.Tensor, features: torch.Tensor | None = None,
+    ) -> tuple[torch.Tensor, torch.Tensor, list]:
         """Extract hierarchical features.
 
         Args:
@@ -399,7 +397,7 @@ class PointNetPPClassifier(nn.Module):
             nn.Linear(256, num_classes),
         )
 
-    def forward(self, xyz: torch.Tensor, features: Optional[torch.Tensor] = None) -> torch.Tensor:
+    def forward(self, xyz: torch.Tensor, features: torch.Tensor | None = None) -> torch.Tensor:
         global_feat, _, _ = self.backbone(xyz, features)
         return self.classifier(global_feat)
 
@@ -427,7 +425,7 @@ class PointNetPPSegmentor(nn.Module):
         )
 
     def forward(
-        self, xyz: torch.Tensor, features: Optional[torch.Tensor] = None,
+        self, xyz: torch.Tensor, features: torch.Tensor | None = None,
     ) -> torch.Tensor:
         l0_xyz, l0_points = xyz, features
         l1_xyz, l1_points = self.sa1(l0_xyz, l0_points)

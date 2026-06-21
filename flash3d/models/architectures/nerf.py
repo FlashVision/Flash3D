@@ -7,7 +7,7 @@ efficient training and rendering.
 from __future__ import annotations
 
 import math
-from typing import Any, Dict, Optional, Tuple
+from typing import Any
 
 import torch
 import torch.nn as nn
@@ -153,7 +153,7 @@ class NeRFMLP(nn.Module):
         dir_dim: int = 27,
         hidden_dim: int = 256,
         num_layers: int = 8,
-        skip_connections: Tuple[int, ...] = (4,),
+        skip_connections: tuple[int, ...] = (4,),
     ) -> None:
         super().__init__()
         self.skip_connections = skip_connections
@@ -180,7 +180,7 @@ class NeRFMLP(nn.Module):
         self,
         pos_encoded: torch.Tensor,
         dir_encoded: torch.Tensor,
-    ) -> Tuple[torch.Tensor, torch.Tensor]:
+    ) -> tuple[torch.Tensor, torch.Tensor]:
         """Predict density and RGB color.
 
         Args:
@@ -215,7 +215,7 @@ class NeRF(nn.Module):
 
     def __init__(
         self,
-        config: Optional[Flash3DConfig] = None,
+        config: Flash3DConfig | None = None,
         use_hash_encoding: bool = True,
         num_pos_frequencies: int = 10,
         num_dir_frequencies: int = 4,
@@ -254,10 +254,10 @@ class NeRF(nn.Module):
 
     def forward(
         self,
-        cameras: Optional[Dict[str, torch.Tensor]] = None,
-        images: Optional[torch.Tensor] = None,
+        cameras: dict[str, torch.Tensor] | None = None,
+        images: torch.Tensor | None = None,
         **kwargs: Any,
-    ) -> Dict[str, torch.Tensor]:
+    ) -> dict[str, torch.Tensor]:
         """Render from camera viewpoints using volume rendering."""
         if cameras is None:
             return {"model": "nerf", "num_parameters": self.num_parameters}
@@ -266,10 +266,10 @@ class NeRF(nn.Module):
 
     def render(
         self,
-        camera: Dict[str, torch.Tensor],
-        num_rays: Optional[int] = None,
+        camera: dict[str, torch.Tensor],
+        num_rays: int | None = None,
         **kwargs: Any,
-    ) -> Dict[str, torch.Tensor]:
+    ) -> dict[str, torch.Tensor]:
         """Render an image using ray marching and volume rendering.
 
         Args:
@@ -317,7 +317,7 @@ class NeRF(nn.Module):
         self,
         positions: torch.Tensor,
         directions: torch.Tensor,
-    ) -> Tuple[torch.Tensor, torch.Tensor]:
+    ) -> tuple[torch.Tensor, torch.Tensor]:
         """Query the NeRF at arbitrary 3D positions.
 
         Args:

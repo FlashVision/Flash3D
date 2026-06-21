@@ -4,11 +4,15 @@ from __future__ import annotations
 
 import time
 from pathlib import Path
-from typing import Any, Dict, List, Optional
+from typing import Any
 
 import torch
 
-from flash3d.analytics.metrics import compute_psnr, compute_ssim, compute_lpips, compute_chamfer_distance
+from flash3d.analytics.metrics import (
+    compute_lpips,
+    compute_psnr,
+    compute_ssim,
+)
 
 
 class Benchmark:
@@ -20,8 +24,8 @@ class Benchmark:
 
     def __init__(
         self,
-        model: Optional[Any] = None,
-        checkpoint_path: Optional[str | Path] = None,
+        model: Any | None = None,
+        checkpoint_path: str | Path | None = None,
         device: str = "cuda",
     ) -> None:
         self.device = device if torch.cuda.is_available() else "cpu"
@@ -36,10 +40,10 @@ class Benchmark:
 
     def run(
         self,
-        dataset_path: Optional[str | Path] = None,
-        metrics: Optional[List[str]] = None,
+        dataset_path: str | Path | None = None,
+        metrics: list[str] | None = None,
         num_samples: int = 100,
-    ) -> Dict[str, Any]:
+    ) -> dict[str, Any]:
         """Run benchmark evaluation.
 
         Args:
@@ -53,7 +57,7 @@ class Benchmark:
         if metrics is None:
             metrics = ["psnr", "ssim", "lpips"]
 
-        results: Dict[str, Any] = {
+        results: dict[str, Any] = {
             "metrics": {m: [] for m in metrics},
             "timing": [],
             "memory": [],
@@ -106,7 +110,7 @@ class Benchmark:
 
         return results
 
-    def print_results(self, results: Dict[str, Any]) -> None:
+    def print_results(self, results: dict[str, Any]) -> None:
         """Print benchmark results in a formatted table."""
         print("\n" + "=" * 60)
         print("  Flash3D Benchmark Results")
@@ -133,10 +137,10 @@ class Benchmark:
 
     def compare_methods(
         self,
-        methods: List[str],
+        methods: list[str],
         dataset_path: str | Path,
         **kwargs: Any,
-    ) -> Dict[str, Dict[str, Any]]:
+    ) -> dict[str, dict[str, Any]]:
         """Compare multiple reconstruction methods on the same dataset."""
         from flash3d.cfg.config import Flash3DConfig
         from flash3d.models.flash3d_model import Flash3D

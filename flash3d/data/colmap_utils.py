@@ -4,12 +4,12 @@ from __future__ import annotations
 
 import struct
 from pathlib import Path
-from typing import Any, Dict
+from typing import Any
 
 import numpy as np
 
 
-def read_cameras_binary(path: str | Path) -> Dict[int, Dict[str, Any]]:
+def read_cameras_binary(path: str | Path) -> dict[int, dict[str, Any]]:
     """Read cameras.bin from COLMAP sparse reconstruction.
 
     Returns dict mapping camera_id -> {model, width, height, params}.
@@ -40,7 +40,7 @@ def read_cameras_binary(path: str | Path) -> Dict[int, Dict[str, Any]]:
     return cameras
 
 
-def read_images_binary(path: str | Path) -> Dict[int, Dict[str, Any]]:
+def read_images_binary(path: str | Path) -> dict[int, dict[str, Any]]:
     """Read images.bin from COLMAP sparse reconstruction.
 
     Returns dict mapping image_id -> {qvec, tvec, camera_id, name, xys, point3d_ids}.
@@ -87,7 +87,7 @@ def read_images_binary(path: str | Path) -> Dict[int, Dict[str, Any]]:
     return images
 
 
-def read_points3d_binary(path: str | Path) -> Dict[int, Dict[str, Any]]:
+def read_points3d_binary(path: str | Path) -> dict[int, dict[str, Any]]:
     """Read points3D.bin from COLMAP sparse reconstruction.
 
     Returns dict mapping point3d_id -> {xyz, rgb, error, track}.
@@ -121,7 +121,7 @@ def read_points3d_binary(path: str | Path) -> Dict[int, Dict[str, Any]]:
     return points
 
 
-def read_cameras_text(path: str | Path) -> Dict[int, Dict[str, Any]]:
+def read_cameras_text(path: str | Path) -> dict[int, dict[str, Any]]:
     """Read cameras.txt from COLMAP sparse reconstruction."""
     cameras = {}
     path = Path(path)

@@ -2,7 +2,8 @@
 
 from __future__ import annotations
 
-from typing import Any, Callable, Dict, List, Tuple
+from collections.abc import Callable
+from typing import Any
 
 import numpy as np
 import torch
@@ -11,10 +12,10 @@ import torch
 class Compose:
     """Compose multiple transforms sequentially."""
 
-    def __init__(self, transforms: List[Callable]) -> None:
+    def __init__(self, transforms: list[Callable]) -> None:
         self.transforms = transforms
 
-    def __call__(self, sample: Dict[str, Any]) -> Dict[str, Any]:
+    def __call__(self, sample: dict[str, Any]) -> dict[str, Any]:
         for t in self.transforms:
             sample = t(sample)
         return sample
@@ -23,10 +24,10 @@ class Compose:
 class Resize:
     """Resize image tensors to target size."""
 
-    def __init__(self, size: Tuple[int, int]) -> None:
+    def __init__(self, size: tuple[int, int]) -> None:
         self.size = size
 
-    def __call__(self, sample: Dict[str, Any]) -> Dict[str, Any]:
+    def __call__(self, sample: dict[str, Any]) -> dict[str, Any]:
         if "image" in sample and sample["image"].dim() == 3:
             sample["image"] = torch.nn.functional.interpolate(
                 sample["image"].unsqueeze(0),
@@ -48,13 +49,13 @@ class Normalize:
 
     def __init__(
         self,
-        mean: Tuple[float, float, float] = (0.485, 0.456, 0.406),
-        std: Tuple[float, float, float] = (0.229, 0.224, 0.225),
+        mean: tuple[float, float, float] = (0.485, 0.456, 0.406),
+        std: tuple[float, float, float] = (0.229, 0.224, 0.225),
     ) -> None:
         self.mean = torch.tensor(mean).view(3, 1, 1)
         self.std = torch.tensor(std).view(3, 1, 1)
 
-    def __call__(self, sample: Dict[str, Any]) -> Dict[str, Any]:
+    def __call__(self, sample: dict[str, Any]) -> dict[str, Any]:
         if "image" in sample:
             sample["image"] = (sample["image"] - self.mean) / self.std
         return sample
@@ -63,7 +64,7 @@ class Normalize:
 class ToTensor:
     """Convert numpy arrays in sample to tensors."""
 
-    def __call__(self, sample: Dict[str, Any]) -> Dict[str, Any]:
+    def __call__(self, sample: dict[str, Any]) -> dict[str, Any]:
         for key, value in sample.items():
             if isinstance(value, np.ndarray):
                 if value.ndim == 3 and value.shape[2] in (1, 3, 4):
@@ -76,10 +77,10 @@ class ToTensor:
 class RandomCrop:
     """Random crop for image tensors."""
 
-    def __init__(self, size: Tuple[int, int]) -> None:
+    def __init__(self, size: tuple[int, int]) -> None:
         self.size = size
 
-    def __call__(self, sample: Dict[str, Any]) -> Dict[str, Any]:
+    def __call__(self, sample: dict[str, Any]) -> dict[str, Any]:
         if "image" not in sample:
             return sample
 
@@ -105,7 +106,7 @@ class RandomHorizontalFlip:
     def __init__(self, p: float = 0.5) -> None:
         self.p = p
 
-    def __call__(self, sample: Dict[str, Any]) -> Dict[str, Any]:
+    def __call__(self, sample: dict[str, Any]) -> dict[str, Any]:
         if np.random.random() < self.p:
             if "image" in sample:
                 sample["image"] = sample["image"].flip(-1)
@@ -127,7 +128,7 @@ class ColorJitter:
         self.contrast = contrast
         self.saturation = saturation
 
-    def __call__(self, sample: Dict[str, Any]) -> Dict[str, Any]:
+    def __call__(self, sample: dict[str, Any]) -> dict[str, Any]:
         if "image" not in sample:
             return sample
 

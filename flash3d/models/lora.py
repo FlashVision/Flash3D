@@ -3,11 +3,9 @@
 from __future__ import annotations
 
 import math
-from typing import Optional
 
 import torch
 import torch.nn as nn
-import torch.nn.functional as F
 
 
 class LoRALinear(nn.Module):
@@ -97,7 +95,7 @@ def apply_lora(
     model: nn.Module,
     rank: int = 16,
     alpha: float = 1.0,
-    target_modules: Optional[list[str]] = None,
+    target_modules: list[str] | None = None,
 ) -> nn.Module:
     """Apply LoRA adapters to linear layers in a model.
 

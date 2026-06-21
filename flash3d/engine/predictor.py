@@ -3,15 +3,15 @@
 from __future__ import annotations
 
 from pathlib import Path
-from typing import Any, Dict, List, Optional
+from typing import Any
 
-import torch
 import numpy as np
+import torch
 from tqdm import tqdm
 
 from flash3d.cfg.config import Flash3DConfig
 from flash3d.models.flash3d_model import Flash3D
-from flash3d.rendering.cameras import Camera, interpolate_cameras
+from flash3d.rendering.cameras import Camera
 
 
 class Predictor:
@@ -20,7 +20,7 @@ class Predictor:
     def __init__(
         self,
         model: Flash3D,
-        config: Optional[Flash3DConfig] = None,
+        config: Flash3DConfig | None = None,
     ) -> None:
         self.model = model
         self.config = config or Flash3DConfig()
@@ -28,7 +28,7 @@ class Predictor:
         self.model.eval()
 
     @classmethod
-    def from_checkpoint(cls, checkpoint_path: str | Path, **kwargs: Any) -> "Predictor":
+    def from_checkpoint(cls, checkpoint_path: str | Path, **kwargs: Any) -> Predictor:
         """Load predictor from a saved checkpoint."""
         model = Flash3D.from_pretrained(checkpoint_path, **kwargs)
         device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
@@ -36,7 +36,7 @@ class Predictor:
         return cls(model)
 
     @torch.no_grad()
-    def render_view(self, camera: Camera) -> Dict[str, torch.Tensor]:
+    def render_view(self, camera: Camera) -> dict[str, torch.Tensor]:
         """Render a single novel view.
 
         Args:
@@ -55,9 +55,9 @@ class Predictor:
         self,
         output_dir: str | Path = "renders/",
         num_frames: int = 120,
-        cameras: Optional[List[Camera]] = None,
+        cameras: list[Camera] | None = None,
         image_format: str = "png",
-    ) -> List[Path]:
+    ) -> list[Path]:
         """Render a camera trajectory and save frames.
 
         Args:
@@ -98,8 +98,8 @@ class Predictor:
     def predict_batch(
         self,
         images: torch.Tensor,
-        cameras: Optional[Dict[str, torch.Tensor]] = None,
-    ) -> Dict[str, torch.Tensor]:
+        cameras: dict[str, torch.Tensor] | None = None,
+    ) -> dict[str, torch.Tensor]:
         """Run inference on a batch of images (feed-forward models).
 
         Args:
@@ -115,7 +115,7 @@ class Predictor:
                       for k, v in cameras.items()}
         return self.model(cameras=cameras, images=images)
 
-    def _generate_orbit_cameras(self, num_frames: int) -> List[Camera]:
+    def _generate_orbit_cameras(self, num_frames: int) -> list[Camera]:
         """Generate orbit cameras around the scene center."""
         import math
 

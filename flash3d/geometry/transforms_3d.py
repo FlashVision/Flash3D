@@ -3,7 +3,6 @@
 from __future__ import annotations
 
 import math
-from typing import Tuple
 
 import torch
 import torch.nn.functional as F
@@ -36,7 +35,7 @@ class SE3:
         return self._matrix[..., :3, 3]
 
     @classmethod
-    def identity(cls, batch_size: int = 0, device: torch.device = torch.device("cpu")) -> "SE3":
+    def identity(cls, batch_size: int = 0, device: torch.device = torch.device("cpu")) -> SE3:
         if batch_size > 0:
             return cls(torch.eye(4, device=device).unsqueeze(0).expand(batch_size, -1, -1).clone())
         return cls(torch.eye(4, device=device))
@@ -46,7 +45,7 @@ class SE3:
         cls,
         R: torch.Tensor,
         t: torch.Tensor,
-    ) -> "SE3":
+    ) -> SE3:
         """Construct from rotation matrix and translation vector."""
         if R.dim() == 2:
             mat = torch.eye(4, device=R.device)
@@ -64,18 +63,18 @@ class SE3:
         cls,
         quat: torch.Tensor,
         trans: torch.Tensor,
-    ) -> "SE3":
+    ) -> SE3:
         """Construct from unit quaternion (wxyz) and translation."""
         R = quaternion_to_rotation_matrix(quat)
         return cls.from_rotation_translation(R, trans)
 
-    def inverse(self) -> "SE3":
+    def inverse(self) -> SE3:
         """Compute the inverse transformation."""
         R_inv = self.rotation.transpose(-1, -2)
         t_inv = -(R_inv @ self.translation.unsqueeze(-1)).squeeze(-1)
         return SE3.from_rotation_translation(R_inv, t_inv)
 
-    def compose(self, other: "SE3") -> "SE3":
+    def compose(self, other: SE3) -> SE3:
         """Compose two SE(3) transformations: self @ other."""
         return SE3(self._matrix @ other._matrix)
 
@@ -94,7 +93,7 @@ class SE3:
             return (R @ points.T).T + t
         return torch.einsum("...ij,...j->...i", R, points) + t.unsqueeze(-2)
 
-    def __matmul__(self, other: "SE3") -> "SE3":
+    def __matmul__(self, other: SE3) -> SE3:
         return self.compose(other)
 
 

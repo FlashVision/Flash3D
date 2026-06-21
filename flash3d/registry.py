@@ -2,7 +2,8 @@
 
 from __future__ import annotations
 
-from typing import Any, Callable, Dict, Optional, Type
+from collections.abc import Callable
+from typing import Any
 
 
 class Registry:
@@ -13,7 +14,7 @@ class Registry:
 
     def __init__(self, name: str) -> None:
         self._name = name
-        self._registry: Dict[str, Any] = {}
+        self._registry: dict[str, Any] = {}
 
     @property
     def name(self) -> str:
@@ -23,7 +24,7 @@ class Registry:
     def registered_names(self) -> list[str]:
         return list(self._registry.keys())
 
-    def register(self, name: Optional[str] = None) -> Callable:
+    def register(self, name: str | None = None) -> Callable:
         """Decorator to register a class or function.
 
         Usage:
