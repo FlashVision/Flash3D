@@ -29,6 +29,8 @@ def rasterize_gaussians(
     sh_degree: int = 3,
     near: float = 0.01,
     far: float = 100.0,
+    antialias: bool = False,
+    mip_filter_size: float = 0.3,
 ) -> Dict[str, torch.Tensor]:
     """Differentiable rasterization of 3D Gaussians.
 
@@ -77,7 +79,11 @@ def rasterize_gaussians(
     means_screen[:, 1] = (means_ndc[:, 1] + 1.0) * 0.5 * image_height
 
     # Compute 2D covariance from 3D covariance projected
-    cov2d = _compute_cov2d(means3d, scales, rotations, viewmatrix, projmatrix, image_width, image_height)
+    cov2d = _compute_cov2d(
+        means3d, scales, rotations, viewmatrix, projmatrix,
+        image_width, image_height,
+        antialias=antialias, mip_filter_size=mip_filter_size,
+    )
 
     # Evaluate SH for view-dependent color
     view_dirs = F.normalize(means3d - camera_center.unsqueeze(0), dim=-1)
@@ -183,8 +189,18 @@ def _compute_cov2d(
     projmatrix: torch.Tensor,
     image_width: int,
     image_height: int,
+    antialias: bool = False,
+    mip_filter_size: float = 0.3,
 ) -> torch.Tensor:
     """Compute 2D covariance matrices from 3D Gaussians via EWA splatting.
+
+    Supports mip-splatting style anti-aliasing by applying a 3D smoothing
+    filter that grows with distance before projection, preventing aliasing
+    from Gaussians smaller than a pixel.
+
+    Args:
+        antialias: Enable mip-splatting / EWA anti-aliasing.
+        mip_filter_size: Base filter size for anti-aliasing (in pixels).
 
     Returns:
         (N, 2, 2) projected covariance matrices.
@@ -192,7 +208,6 @@ def _compute_cov2d(
     N = means3d.shape[0]
     device = means3d.device
 
-    # Build 3D covariance: R @ S @ S^T @ R^T
     S = torch.diag_embed(scales)
     w, x, y, z = rotations[:, 0], rotations[:, 1], rotations[:, 2], rotations[:, 3]
     R = torch.stack([
@@ -204,7 +219,6 @@ def _compute_cov2d(
     RS = R @ S
     cov3d = RS @ RS.transpose(-1, -2)
 
-    # Project to 2D using Jacobian of perspective projection
     W = viewmatrix[:3, :3]
     means_cam = (W @ means3d.T).T + viewmatrix[:3, 3].unsqueeze(0)
     tz = means_cam[:, 2].clamp(min=0.01)
@@ -212,17 +226,29 @@ def _compute_cov2d(
     fx = projmatrix[0, 0] * image_width * 0.5
     fy = projmatrix[1, 1] * image_height * 0.5
 
+    if antialias:
+        # Mip-splatting: apply 3D low-pass filter before projection.
+        # The filter size in world space is proportional to distance / focal length,
+        # ensuring Gaussians are at least one pixel wide after projection.
+        pixel_size_x = tz / fx
+        pixel_size_y = tz / fy
+        mip_scale = mip_filter_size * torch.stack([pixel_size_x, pixel_size_y, tz * 0.001], dim=-1)
+        mip_cov = torch.diag_embed(mip_scale ** 2)
+        cov3d_cam = W.unsqueeze(0) @ cov3d @ W.T.unsqueeze(0)
+        cov3d_cam = cov3d_cam + mip_cov
+    else:
+        cov3d_cam = W.unsqueeze(0) @ cov3d @ W.T.unsqueeze(0)
+
     J = torch.zeros(N, 2, 3, device=device)
     J[:, 0, 0] = fx / tz
     J[:, 0, 2] = -fx * means_cam[:, 0] / (tz * tz)
     J[:, 1, 1] = fy / tz
     J[:, 1, 2] = -fy * means_cam[:, 1] / (tz * tz)
 
-    cov3d_cam = W.unsqueeze(0) @ cov3d @ W.T.unsqueeze(0)
     cov2d = J @ cov3d_cam @ J.transpose(-1, -2)
 
-    # Add small blur for anti-aliasing
-    cov2d[:, 0, 0] += 0.3
-    cov2d[:, 1, 1] += 0.3
+    if not antialias:
+        cov2d[:, 0, 0] += 0.3
+        cov2d[:, 1, 1] += 0.3
 
     return cov2d
