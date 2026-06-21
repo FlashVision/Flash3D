@@ -1,0 +1,31 @@
+task: scene_reconstruction
+device: cuda
+seed: 42
+output_dir: outputs/point_cloud/
+
+model:
+  name: feed_forward_3dgs
+  num_gaussians: 50000
+  sh_degree: 2
+  use_lora: false
+
+data:
+  dataset: dl3dv
+  root_dir: data/dl3dv/
+  image_size: [512, 512]
+  num_workers: 4
+  train_split: 0.9
+
+train:
+  max_iterations: 100000
+  learning_rate: 0.0001
+  batch_size: 4
+  save_interval: 10000
+  eval_interval: 5000
+
+render:
+  image_width: 512
+  image_height: 512
+  near: 0.1
+  far: 50.0
+  background_color: [0.0, 0.0, 0.0]

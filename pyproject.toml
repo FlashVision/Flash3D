@@ -1,0 +1,98 @@
+[build-system]
+requires = ["setuptools>=68.0", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "flash3d"
+version = "1.0.0"
+description = "Flash3D – Production-quality 3D Vision: Gaussian Splatting, NeRF, Depth Estimation & 3D Reconstruction"
+readme = "README.md"
+license = {text = "MIT"}
+requires-python = ">=3.10"
+authors = [
+    {name = "Gaurav14cs17", email = "gaurav14cs17@gmail.com"},
+]
+keywords = [
+    "3d-vision",
+    "gaussian-splatting",
+    "nerf",
+    "depth-estimation",
+    "3d-reconstruction",
+    "point-cloud",
+    "novel-view-synthesis",
+    "pytorch",
+]
+classifiers = [
+    "Development Status :: 5 - Production/Stable",
+    "Intended Audience :: Developers",
+    "Intended Audience :: Science/Research",
+    "License :: OSI Approved :: MIT License",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+    "Topic :: Scientific/Engineering :: Artificial Intelligence",
+    "Topic :: Scientific/Engineering :: Image Recognition",
+]
+dependencies = [
+    "torch>=2.2.0",
+    "torchvision>=0.17.0",
+    "numpy>=1.24.0",
+    "opencv-python>=4.8.0",
+    "Pillow>=10.0.0",
+    "PyYAML>=6.0",
+    "tqdm>=4.66.0",
+    "plyfile>=1.0",
+    "trimesh>=4.0.0",
+]
+
+[project.optional-dependencies]
+dev = [
+    "pytest>=7.4.0",
+    "pytest-cov>=4.1.0",
+    "ruff>=0.3.0",
+    "pre-commit>=3.6.0",
+    "mypy>=1.8.0",
+]
+docs = [
+    "mkdocs>=1.5.0",
+    "mkdocs-material>=9.5.0",
+]
+full = [
+    "open3d>=0.18.0",
+    "lpips>=0.1.4",
+    "pytorch3d>=0.7.5",
+    "matplotlib>=3.8.0",
+    "tensorboard>=2.15.0",
+    "wandb>=0.16.0",
+]
+
+[project.urls]
+Homepage = "https://github.com/Gaurav14cs17/FlashVision"
+Documentation = "https://github.com/Gaurav14cs17/FlashVision/tree/main/Flash3D/docs"
+Repository = "https://github.com/Gaurav14cs17/FlashVision"
+Issues = "https://github.com/Gaurav14cs17/FlashVision/issues"
+
+[project.scripts]
+flash3d = "flash3d.cli:main"
+
+[tool.setuptools.packages.find]
+include = ["flash3d*"]
+
+[tool.ruff]
+target-version = "py310"
+line-length = 100
+
+[tool.ruff.lint]
+select = ["E", "F", "W", "I", "N", "UP"]
+ignore = ["E501"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+addopts = "-v --tb=short"
+
+[tool.mypy]
+python_version = "3.10"
+warn_return_any = true
+warn_unused_configs = true
+ignore_missing_imports = true

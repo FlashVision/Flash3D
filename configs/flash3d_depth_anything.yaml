@@ -1,0 +1,26 @@
+task: depth_prediction
+device: cuda
+seed: 42
+output_dir: outputs/depth_anything/
+
+model:
+  name: depth_anything
+  pretrained: depth-anything-v2-large
+
+data:
+  dataset: scannet
+  root_dir: data/scannet/
+  image_size: [518, 518]
+  num_workers: 4
+
+train:
+  max_iterations: 100000
+  learning_rate: 0.0001
+  batch_size: 8
+  save_interval: 10000
+
+render:
+  image_width: 518
+  image_height: 518
+  near: 0.01
+  far: 10.0

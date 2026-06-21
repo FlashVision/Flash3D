@@ -1,0 +1,30 @@
+task: novel_view_synthesis
+device: cuda
+seed: 42
+output_dir: outputs/nerf/
+
+model:
+  name: nerf
+  use_lora: false
+
+data:
+  dataset: colmap
+  root_dir: data/lego/
+  image_size: [800, 800]
+  num_workers: 4
+  train_split: 0.9
+  white_background: true
+
+train:
+  max_iterations: 50000
+  learning_rate: 0.0005
+  batch_size: 1024
+  save_interval: 10000
+  eval_interval: 5000
+
+render:
+  image_width: 800
+  image_height: 800
+  near: 2.0
+  far: 6.0
+  background_color: [1.0, 1.0, 1.0]

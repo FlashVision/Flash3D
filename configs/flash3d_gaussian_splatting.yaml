@@ -1,0 +1,41 @@
+task: novel_view_synthesis
+device: cuda
+seed: 42
+output_dir: outputs/gaussian_splatting/
+
+model:
+  name: gaussian_splatting
+  num_gaussians: 100000
+  sh_degree: 3
+  use_lora: false
+
+data:
+  dataset: colmap
+  root_dir: data/garden/
+  image_size: [800, 800]
+  num_workers: 4
+  train_split: 0.9
+  white_background: false
+
+train:
+  max_iterations: 30000
+  lr_position: 0.00016
+  lr_opacity: 0.05
+  lr_scaling: 0.005
+  lr_rotation: 0.001
+  lr_sh: 0.0025
+  densify_from: 500
+  densify_until: 15000
+  densify_interval: 100
+  opacity_reset_interval: 3000
+  densify_grad_threshold: 0.0002
+  batch_size: 1
+  save_interval: 5000
+  eval_interval: 1000
+
+render:
+  image_width: 800
+  image_height: 800
+  near: 0.01
+  far: 100.0
+  background_color: [0.0, 0.0, 0.0]
